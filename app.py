@@ -24,8 +24,8 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"],
 [data-testid="stMainBlockContainer"] { background-color: var(--bg) !important; }
 .block-container { padding: 2rem 3rem !important; max-width: 1100px !important; margin: 0 auto !important; }
-header[data-testid="stHeader"], [data-testid="collapsedControl"],
-section[data-testid="stSidebar"] { display: none !important; }
+[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"],
+[data-testid="collapsedControl"], section[data-testid="stSidebar"] { display: none !important; }
 #MainMenu, footer { visibility: hidden; }
 
 .hero { padding: 3rem 0 2rem 0; }

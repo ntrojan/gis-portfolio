@@ -8,8 +8,8 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-  header[data-testid="stHeader"], [data-testid="collapsedControl"],
-  section[data-testid="stSidebar"] { display: none !important; }
+  [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"],
+  [data-testid="collapsedControl"], section[data-testid="stSidebar"] { display: none !important; }
   .block-container { padding: 0.15rem 1rem 0 1rem !important; max-width: 100% !important; }
   [data-testid="stMainBlockContainer"] { padding-top: 0.15rem !important; }
   [data-testid="stVerticalBlock"] { gap: 0.4rem !important; }
