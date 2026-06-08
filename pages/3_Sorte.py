@@ -96,6 +96,8 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: var(--text
 #MainMenu, footer { visibility: hidden; }
 /* pull the Home link tight to the top */
 [data-testid="stPageLink"] { margin-top: 0 !important; margin-bottom: 0 !important; }
+/* keep the interactive map clear of the lead text above it */
+iframe[title*="st_folium"] { margin-top: 0.9rem !important; }
 
 /* ── Typography ─────────────────────────────────────────────── */
 .eyebrow { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; letter-spacing:0.16em;
