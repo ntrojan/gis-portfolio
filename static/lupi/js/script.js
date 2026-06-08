@@ -22,12 +22,15 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
 }).addTo(map);
 
-// Frame Switzerland, padding for the side panels so no canton stays hidden
+// Frame Switzerland, padding for the side panels (+ cluster icon width)
+// so the eastern (Graubünden) cluster never ends up under the right panels
 function frameSwitzerland() {
     const narrow = window.innerWidth <= 820;
+    // right panel width (min 270px) + its offset/gap + half a cluster icon + breathing room
+    const rightPad = Math.max(270, Math.round(window.innerWidth * 0.24)) + 80;
     map.fitBounds(switzerlandBounds, narrow
         ? { padding: [20, 20] }
-        : { paddingTopLeft: [262, 28], paddingBottomRight: [Math.round(window.innerWidth * 0.24) + 28, 52] });
+        : { paddingTopLeft: [275, 30], paddingBottomRight: [rightPad, 55] });
 }
 frameSwitzerland();
 
@@ -120,8 +123,8 @@ const markers = L.markerClusterGroup({
                         ${wolfIconHtmlCluster} 
                     </div>
                     <div style="position: absolute; top: 0; left: 0; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
-                        <div style="background: white; border: 2px solid black; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">
-                            ${count} <!-- Affiche le nombre de marqueurs dans le cluster -->
+                        <div style="background: white; border: 2px solid black; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: #000;">
+                            ${count} <!-- Number of markers in the cluster -->
                         </div>
                     </div>
                 </div>`,
