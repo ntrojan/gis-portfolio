@@ -1,0 +1,192 @@
+<!DOCTYPE html> 
+<html>
+    <head>
+        <title>Mouvements de loups sur le territoire suisse</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <meta name="description" content="Analyse spatiale et temporelle des observations des loups en Suisse entre 1999 et 2022.">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" /> 
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" /> 
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" /> 
+        <link rel="stylesheet" href="./css/style.css" /> 
+    </head>
+    
+    <body>
+        <!--Titre-->
+        <div id="header"> 
+            <h1>Suivi de la population de loups en Suisse</h1>
+            <h2>Analyse spatiale et temporelle des observations entre 1999 et 2022 sur la base de la trace par reconnaissance génétique fournie par l'insitut KORA </h2>
+        </div>
+        
+        <!--Sources-->
+        <div id="data-sources">
+            <p>Sources de données: <a href="https://www.kora.ch/fr" target="_blank">KORA</a> et <a href="https://www.swisstopo.admin.ch/de/landschaftsmodell-swisstlmregio" target="_blank">Swisstopo</a></p>
+        </div>    
+
+        <!--Conteneurs-->
+        <div id="map"></div>
+        <div id="year-chart" class="chart"></div>
+        <div id="canton-chart" class="chart"></div>
+        <div id="scatter-plot" class="chart"></div>
+        <div id="time-slider-container">
+            <input type="range" id="time-slider" min="1999" max="2022" step="1" value="1999" />
+            <label id="year-label">1999</label>
+        </div>    
+        <div id="filters">
+            <!--Filtre genre-->
+            <label for="filter-gender">Genre:</label>
+            <select id="filter-gender" onchange="applyFilters()">
+                <option value="">Tous</option>
+                <option value="M">Mâles</option>
+                <option value="F">Femelles</option>
+            </select>
+
+            <!--Filtre années-->
+            <label for="filter-year">Année:</label>
+            <select id="filter-year" onchange="applyFilters()">
+                <option value="">Tous</option>
+                <option value="1999">1999</option>
+                <option value="2000">2000</option>
+                <option value="2001">2001</option>
+                <option value="2002">2002</option>
+                <option value="2003">2003</option>
+                <option value="2004">2004</option>
+                <option value="2005">2005</option>
+                <option value="2006">2006</option>
+                <option value="2007">2007</option>
+                <option value="2008">2008</option>
+                <option value="2009">2009</option>
+                <option value="2010">2010</option>
+                <option value="2011">2011</option>
+                <option value="2012">2012</option>
+                <option value="2013">2013</option>
+                <option value="2014">2014</option>
+                <option value="2015">2015</option>
+                <option value="2016">2016</option>
+                <option value="2017">2017</option>
+                <option value="2018">2018</option>
+                <option value="2019">2019</option>
+                <option value="2020">2010</option>
+                <option value="2021">2021</option>
+                <option value="2022">2022</option>
+            </select>
+
+            <!--Filtre Canton-->
+            <label for="filter-canton">Canton:</label>
+            <select id="filter-canton" onchange="applyFilters()">
+                <option value="">Tous</option>
+                <option value="Aargau">Aargau</option>
+                <option value="Appenzell Ausserrhoden">Appenzell Ausserrhoden</option>
+                <option value="Bern">Bern</option>
+                <option value="Fribourg">Fribourg</option>
+                <option value="Glarus">Glarus</option>
+                <option value="Graubünden">Graubünden</option>
+                <option value="Luzern">Luzern</option>
+                <option value="Nidwalden">Nidwalden</option>
+                <option value="Obwalden">Obwalden</option>
+                <option value="Schwyz">Schwyz</option>
+                <option value="St- Gallen">St- Gallen</option>
+                <option value="Thurgau">Thurgau</option>
+                <option value="Ticino">Ticino</option>
+                <option value="Uri">Uri</option>
+                <option value="Vaud">Vaud</option>
+                <option value="Valais">Valais</option>
+                <option value="Zürich">Zürich</option>
+            </select>
+
+            <!--Filtre ID unique-->
+            <label for="filter-wolf-id">ID:</label>
+            <select id="filter-wolf-id" onchange="applyFilters()">
+                <option value="">Tous</option>
+                <option value="F01">F01</option>
+                <option value="F05">F05</option>
+                <option value="F07">F07</option>
+                <option value="F11">F11</option>
+                <option value="F14">F14</option>
+                <option value="F16">F16</option>
+                <option value="F18">F18</option>
+                <option value="F19">F19</option>
+                <option value="F24">F24</option>
+                <option value="F28">F28</option>
+                <option value="F31">F31</option>
+                <option value="F32">F32</option>
+                <option value="F33">F33</option>
+                <option value="F35">F35</option>
+                <option value="F37">F37</option>
+                <option value="F38">F38</option>
+                <option value="F43">F43</option>
+                <option value="F45">F45</option>
+                <option value="F49">F49</option>
+                <option value="F57">F57</option>
+                <option value="F59">F59</option>
+                <option value="F60">F60</option>
+                <option value="F64">F64</option>
+                <option value="F75">F75</option>
+                <option value="F78">F78</option>
+                <option value="F94">F94</option>
+                <option value="M03">M03</option>
+                <option value="M09">M09</option>
+                <option value="M103">M103</option>
+                <option value="M107">M107</option>
+                <option value="M108">M108</option>
+                <option value="M109">M109</option>
+                <option value="M11">M11</option>
+                <option value="M131">M131</option>
+                <option value="M133">M133</option>
+                <option value="M135">M135</option>
+                <option value="M153">M153</option>
+                <option value="M157">M157</option>
+                <option value="M159">M159</option>
+                <option value="M16">M16</option>
+                <option value="M162">M162</option>
+                <option value="M169">M169</option>
+                <option value="M172">M172</option>
+                <option value="M182">M182</option>
+                <option value="M186">M186</option>
+                <option value="M187">M187</option>
+                <option value="M189">M189</option>
+                <option value="M190">M190</option>
+                <option value="M20">M20</option>
+                <option value="M243">M243</option>
+                <option value="M28">M28</option>
+                <option value="M30">M30</option>
+                <option value="M32">M32</option>
+                <option value="M34">M34</option>
+                <option value="M35">M35</option>
+                <option value="M36">M36</option>
+                <option value="M38">M38</option>
+                <option value="M43">M43</option>
+                <option value="M45">M45</option>
+                <option value="M46">M46</option>
+                <option value="M47">M47</option>
+                <option value="M51">M51</option>
+                <option value="M52">M52</option>
+                <option value="M56">M56</option>
+                <option value="M59">M59</option>
+                <option value="M64">M64</option>
+                <option value="M68">M68</option>
+                <option value="M71">M71</option>
+                <option value="M73">M73</option>
+                <option value="M74">M74</option>
+                <option value="M75">M75</option>
+                <option value="M76">M76</option>
+                <option value="M82">M82</option>
+                <option value="M92">M92</option>
+                <option value="M95">M95</option>
+                <option value="M97">M97</option>
+            </select>
+        </select>
+        
+        <!-- Buttons -->
+        <button id="reset-filters" onclick="resetFilters()">Reset</button> 
+
+        <!--Libraries, scripts et plugins-->    
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+        <script src="./js/polylinedecorator.js"></script>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@turf/turf/turf.min.js"></script>
+        <script src="js/script.js" defer></script>
+
+    </body>
+</html>

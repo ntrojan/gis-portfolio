@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MagicMeteo — Magic Pass Weather</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(255,255,255,0.08);
+    --accent: #4fc3f7;
+    --text: #e8edf5;
+    --text-muted: #6b7a99;
+    --radius: 12px;
+    --panel-w: 280px;
+    --sidebar-w: 250px;
+    --timepanel-h: 82px;
+    --gap: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+  #map { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* ═══ LEFT COLUMN ═══ */
+  #left-col {
+    position: absolute;
+    top: 12px; left: 12px;
+    bottom: calc(var(--timepanel-h) + 20px);
+    width: var(--sidebar-w);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    pointer-events: none;
+  }
+  #left-col > * { pointer-events: all; }
+
+  #header {
+    background: rgba(10,14,26,0.90);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    flex-shrink: 0;
+  }
+  #header .logo { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; line-height: 1; }
+  #header .subtitle { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-top: 1px; }
+
+  #info-box {
+    background: rgba(10,14,26,0.90);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    flex-shrink: 0;
+  }
+  #info-box .info-title { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  #info-box .info-text { font-size: 10px; color: var(--text-muted); line-height: 1.5; font-family: 'DM Mono', monospace; }
+
+  #sidebar-inner {
+    background: rgba(10,14,26,0.90);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  #search-wrap { padding: 9px; border-bottom: 1px solid var(--border); position: relative; flex-shrink: 0; }
+  #search-input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace;
+    font-size: 12px; padding: 6px 10px 6px 26px; outline: none; transition: border-color 0.2s;
+  }
+  #search-input:focus { border-color: var(--accent); }
+  #search-input::placeholder { color: var(--text-muted); }
+  .search-icon { position: absolute; left: 17px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--text-muted); pointer-events: none; }
+
+  #station-list { overflow-y: auto; flex: 1 1 0; min-height: 0; padding: 5px; }
+  #station-list::-webkit-scrollbar { width: 3px; }
+  #station-list::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+
+  .station-item { display: flex; align-items: center; gap: 7px; padding: 5px 7px; border-radius: 7px; cursor: pointer; transition: background 0.15s; font-size: 12px; }
+  .station-item:hover { background: var(--surface2); }
+  .station-item.active { background: rgba(79,195,247,0.10); }
+  .station-check { width: 13px; height: 13px; border: 1.5px solid var(--text-muted); border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; font-size: 9px; }
+  .station-item.active .station-check { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .station-name { flex: 1; color: var(--text); line-height: 1.2; }
+  .station-temp { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+
+  #sidebar-footer { padding: 6px 10px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  #sidebar-footer span { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); }
+  #btn-select-all { background: none; border: none; color: var(--accent); font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: background 0.15s; }
+  #btn-select-all:hover { background: rgba(79,195,247,0.1); }
+
+  /* ═══ RIGHT COLUMN: lang + legend + detail panel ═══ */
+  #right-col {
+    position: absolute;
+    top: 12px; right: 12px;
+    bottom: calc(var(--timepanel-h) + 20px);
+    width: var(--panel-w);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    pointer-events: none;
+    align-items: flex-end;
+  }
+  #right-col > * { pointer-events: all; }
+
+  #lang-switcher {
+    display: flex; gap: 4px;
+    background: rgba(10,14,26,0.90);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 5px;
+    flex-shrink: 0;
+  }
+  #lang-switcher button { background: none; border: none; color: var(--text-muted); font-family: 'DM Mono', monospace; font-size: 11px; padding: 3px 8px; border-radius: 7px; cursor: pointer; transition: all 0.2s; }
+  #lang-switcher button.active { background: var(--accent); color: var(--bg); }
+
+  #legend {
+    background: rgba(10,14,26,0.90);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    flex-shrink: 0;
+    width: 100%;
+  }
+  #legend .leg-title { font-family: 'DM Mono', monospace; color: var(--text-muted); font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .leg-row { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; color: var(--text-muted); font-family: 'DM Mono', monospace; font-size: 10px; }
+  .leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Detail panel — sotto la legenda, occupa lo spazio rimanente */
+  #detail-panel {
+    display: none;
+    width: 100%;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+  }
+  #detail-panel::-webkit-scrollbar { width: 3px; }
+  #detail-panel::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+
+  /* Popup content styles (riusati da detail-panel) */
+  .popup-header { padding: 12px 14px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; position: relative; }
+  .popup-icon { font-size: 28px; line-height: 1; flex-shrink: 0; }
+  .popup-title { font-size: 13px; font-weight: 700; line-height: 1.2; }
+  .popup-time { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text-muted); margin-top: 1px; }
+  .popup-temp-main { font-size: 24px; font-weight: 800; line-height: 1; margin-top: 2px; }
+  .popup-close { position: absolute; top: 8px; right: 10px; background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 4px; transition: background 0.15s; }
+  .popup-close:hover { background: var(--surface2); }
+
+  .popup-body { padding: 10px 14px; }
+  .popup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px; }
+  .popup-stat { background: var(--surface2); border-radius: 7px; padding: 7px 9px; }
+  .popup-stat-label { font-size: 9px; font-family: 'DM Mono', monospace; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .popup-stat-value { font-size: 13px; font-weight: 600; }
+  .popup-stat-value span { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+  .popup-chart-title { font-size: 9px; font-family: 'DM Mono', monospace; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .popup-chart-wrap { height: 80px; position: relative; }
+
+  /* ═══ TIME PANEL ═══ */
+  #time-panel {
+    position: absolute;
+    bottom: 12px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: rgba(10,14,26,0.92);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 12px 20px;
+    min-width: 460px; max-width: 55vw;
+  }
+  .time-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 12px; }
+  #time-label { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--accent); letter-spacing: 0.5px; }
+  #time-display { font-size: 14px; font-weight: 700; }
+  #play-btn { background: var(--accent); border: none; color: var(--bg); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; flex-shrink: 0; }
+  #play-btn:hover { transform: scale(1.1); }
+  #time-slider { width: 100%; -webkit-appearance: none; height: 3px; border-radius: 2px; background: var(--surface2); outline: none; cursor: pointer; margin-bottom: 5px; }
+  #time-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 8px rgba(79,195,247,0.5); }
+  .time-ticks { display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-muted); }
+
+  /* ═══ MARKERS ═══ */
+  .weather-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); }
+  .weather-marker .icon-wrap { width: 38px; height: 38px; border-radius: 50%; background: rgba(10,14,26,0.88); backdrop-filter: blur(8px); border: 2px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 20px; transition: transform 0.2s, border-color 0.2s; box-shadow: 0 3px 10px rgba(0,0,0,0.4); }
+  .weather-marker:hover .icon-wrap { transform: scale(1.15); border-color: var(--accent); }
+  .weather-marker .temp-label { margin-top: 2px; font-size: 10px; font-weight: 700; font-family: 'DM Mono', monospace; color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.8); background: rgba(10,14,26,0.75); padding: 1px 4px; border-radius: 3px; }
+
+  /* ═══ LOADING ═══ */
+  #loading { position: absolute; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; gap: 14px; }
+  #loading .load-title { font-size: 26px; font-weight: 800; color: var(--accent); letter-spacing: -1px; }
+  #loading .load-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--surface2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+
+  /* ═══ HIDE MOBILE ELEMENTS ON DESKTOP ═══ */
+  #mobile-btns,
+  #mobile-drawer-left,
+  #mobile-drawer-right,
+  #mobile-detail { display: none; }
+
+  /* ═══ MOBILE ═══ */
+  @media (max-width: 768px) {
+
+    /* Nascondi tutto tranne mappa, header compatto, time panel e pulsanti toggle */
+    #left-col { display: none; }
+    #right-col { display: none; }
+
+    /* Header compatto in alto a sinistra */
+    #header {
+      position: absolute;
+      top: 12px; left: 12px;
+      z-index: 20;
+      display: block !important;
+      padding: 7px 12px;
+    }
+    #header .logo { font-size: 15px; }
+    #header .subtitle { display: none; }
+
+    /* Pulsanti toggle mobile in alto a destra */
+    #mobile-btns {
+      display: flex !important;
+      position: absolute;
+      top: 12px; right: 12px;
+      z-index: 20;
+      gap: 6px;
+    }
+
+    .mob-btn {
+      background: rgba(10,14,26,0.90);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 16px;
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .mob-btn.active { border-color: var(--accent); color: var(--accent); }
+
+    /* Drawer sinistra (lista stazioni) — scende dall'alto */
+    #mobile-drawer-left {
+      display: none;
+      position: absolute;
+      top: 60px; left: 12px; right: 12px;
+      z-index: 19;
+      background: rgba(10,14,26,0.96);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      max-height: 55vh;
+      overflow: hidden;
+      flex-direction: column;
+    }
+    #mobile-drawer-left.open { display: flex; }
+
+    /* Drawer destra (legenda + lang) */
+    #mobile-drawer-right {
+      display: none;
+      position: absolute;
+      top: 60px; right: 12px;
+      z-index: 19;
+      background: rgba(10,14,26,0.96);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      min-width: 180px;
+    }
+    #mobile-drawer-right.open { display: block; }
+
+    /* Time panel compatto in basso */
+    #time-panel {
+      min-width: unset;
+      width: calc(100vw - 24px);
+      left: 12px;
+      transform: none;
+      bottom: 12px;
+      padding: 10px 14px;
+    }
+    #time-display { font-size: 13px; }
+
+    /* Detail panel come sheet dal basso */
+    #mobile-detail {
+      display: none;
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      z-index: 25;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-radius: 16px 16px 0 0;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    #mobile-detail.open { display: block; }
+    #mobile-detail .drag-handle {
+      width: 36px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 10px auto 6px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="load-title">MagicMeteo ⛷️</div>
+  <div class="spinner"></div>
+  <div class="load-sub" id="load-msg">Caricamento dati meteo...</div>
+</div>
+
+<div id="map"></div>
+
+<!-- MOBILE BUTTONS -->
+<div id="mobile-btns" style="display:none">
+  <button class="mob-btn" id="mob-btn-list" onclick="toggleMobileDrawer('left')">☰</button>
+  <button class="mob-btn" id="mob-btn-legend" onclick="toggleMobileDrawer('right')">🌡️</button>
+</div>
+
+<!-- MOBILE DRAWER LEFT -->
+<div id="mobile-drawer-left">
+  <div style="padding:9px;border-bottom:1px solid var(--border);position:relative;flex-shrink:0">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search-input-mobile" placeholder="Cerca stazione..." oninput="filterStationsMobile(this.value)" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:7px 10px 7px 26px;outline:none;">
+  </div>
+  <div id="station-list-mobile" style="overflow-y:auto;flex:1 1 0;min-height:0;padding:5px;"></div>
+  <div style="padding:6px 10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+    <span id="station-count-mobile" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">—</span>
+    <button onclick="toggleSelectAll()" style="background:none;border:none;color:var(--accent);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">Tutte</button>
+  </div>
+</div>
+
+<!-- MOBILE DRAWER RIGHT -->
+<div id="mobile-drawer-right">
+  <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;">
+    <button onclick="setLang('it')" id="mob-btn-it" style="background:var(--accent);border:none;color:var(--bg);font-family:'DM Mono',monospace;font-size:12px;padding:4px 10px;border-radius:7px;cursor:pointer;">IT</button>
+    <button onclick="setLang('fr')" id="mob-btn-fr" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px;padding:4px 10px;border-radius:7px;cursor:pointer;">FR</button>
+    <button onclick="setLang('de')" id="mob-btn-de" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px;padding:4px 10px;border-radius:7px;cursor:pointer;">DE</button>
+    <button onclick="setLang('en')" id="mob-btn-en" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px;padding:4px 10px;border-radius:7px;cursor:pointer;">EN</button>
+  </div>
+  <div style="font-family:'DM Mono',monospace;color:var(--text-muted);font-size:9px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Temperatura</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#4fc3f7"></div><span>≤ −10°C</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:#81d4fa"></div><span>−10 → 0°C</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:#a5d6a7"></div><span>0 → 10°C</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:#ffcc02"></div><span>10 → 20°C</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:#ff7043"></div><span>≥ 20°C</span></div>
+</div>
+
+<!-- MOBILE DETAIL SHEET -->
+<div id="mobile-detail">
+  <div class="drag-handle"></div>
+  <div id="mobile-detail-content"></div>
+</div>
+
+<!-- LEFT COLUMN -->
+<div id="left-col">
+  <div id="header">
+    <div class="logo">MagicMeteo</div>
+    <div class="subtitle">MAGIC PASS WEATHER FORECAST</div>
+  </div>
+  <div id="info-box">
+    <div class="info-title" data-i18n="info_title">Cos'è MagicMeteo?</div>
+    <div class="info-text" data-i18n="info_text">Consulta il meteo di tutti i resort del Magic Pass in un'unica mappa interattiva. Previsioni aggiornate ogni 6 ore per i prossimi 5 giorni.</div>
+  </div>
+  <div id="sidebar-inner">
+    <div id="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Cerca stazione..." oninput="filterStations(this.value)">
+    </div>
+    <div id="station-list"></div>
+    <div id="sidebar-footer">
+      <span id="station-count">—</span>
+      <button id="btn-select-all" onclick="toggleSelectAll()" data-i18n="select_all">Tutte</button>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT COLUMN: lang + legend + detail panel -->
+<div id="right-col">
+  <div id="lang-switcher">
+    <button onclick="setLang('it')" class="active" id="btn-it">IT</button>
+    <button onclick="setLang('fr')" id="btn-fr">FR</button>
+    <button onclick="setLang('de')" id="btn-de">DE</button>
+    <button onclick="setLang('en')" id="btn-en">EN</button>
+  </div>
+  <div id="legend">
+    <div class="leg-title" data-i18n="legend_temp">Temperatura</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#4fc3f7"></div><span>≤ −10°C</span></div>
+    <div class="leg-row"><div class="leg-dot" style="background:#81d4fa"></div><span>−10 → 0°C</span></div>
+    <div class="leg-row"><div class="leg-dot" style="background:#a5d6a7"></div><span>0 → 10°C</span></div>
+    <div class="leg-row"><div class="leg-dot" style="background:#ffcc02"></div><span>10 → 20°C</span></div>
+    <div class="leg-row"><div class="leg-dot" style="background:#ff7043"></div><span>≥ 20°C</span></div>
+  </div>
+  <div id="detail-panel"></div>
+</div>
+
+<!-- TIME PANEL -->
+<div id="time-panel">
+  <div class="time-header">
+    <div>
+      <div id="time-label">PREVISIONE</div>
+      <div id="time-display">—</div>
+    </div>
+    <button id="play-btn" onclick="togglePlay()">▶</button>
+  </div>
+  <input type="range" id="time-slider" min="0" value="0" step="1">
+  <div class="time-ticks" id="time-ticks"></div>
+</div>
+
+<script>
+const LANGS = {
+  it: { forecast:'PREVISIONE', legend_temp:'Temperatura', popup_temp:'Min / Max 5gg', popup_wind:'Vento', popup_gust:'Raffiche', popup_precip:'Precipitazioni', popup_snow:'Neve', popup_zero:'Limite zero termico', popup_prob:'Prob. pioggia', popup_chart:'Temperatura 5 giorni', info_title:"Cos'è MagicMeteo?", info_text:"Consulta il meteo di tutti i resort del Magic Pass in un'unica mappa interattiva. Previsioni aggiornate ogni 6 ore per i prossimi 5 giorni.", search_placeholder:'Cerca stazione...', select_all:'Tutte', locale:'it-CH' },
+  fr: { forecast:'PRÉVISION', legend_temp:'Température', popup_temp:'Min / Max 5j', popup_wind:'Vent', popup_gust:'Rafales', popup_precip:'Précipitations', popup_snow:'Neige', popup_zero:'Limite de neige', popup_prob:'Prob. pluie', popup_chart:'Température 5 jours', info_title:"Qu'est-ce que MagicMeteo?", info_text:"Consultez la météo de toutes les stations de ski Magic Pass en Suisse sur une seule carte interactive. Prévisions mises à jour toutes les 6 heures pour les 5 prochains jours.", search_placeholder:'Chercher une station...', select_all:'Tout', locale:'fr-CH' },
+  de: { forecast:'VORHERSAGE', legend_temp:'Temperatur', popup_temp:'Min / Max 5T', popup_wind:'Wind', popup_gust:'Böen', popup_precip:'Niederschlag', popup_snow:'Schnee', popup_zero:'Schneefallgrenze', popup_prob:'Regenwahrsch.', popup_chart:'Temperatur 5 Tage', info_title:'Was ist MagicMeteo?', info_text:'Wetter aller Magic Pass Skigebiete in der Schweiz auf einer interaktiven Karte. Prognosen werden alle 6 Stunden für die nächsten 5 Tage aktualisiert.', search_placeholder:'Station suchen...', select_all:'Alle', locale:'de-CH' },
+  en: { forecast:'FORECAST', legend_temp:'Temperature', popup_temp:'Min / Max 5d', popup_wind:'Wind', popup_gust:'Gusts', popup_precip:'Precipitation', popup_snow:'Snowfall', popup_zero:'Freezing level', popup_prob:'Rain probability', popup_chart:'Temperature 5 days', info_title:'What is MagicMeteo?', info_text:'Check the weather for all Magic Pass ski resorts in Switzerland on a single interactive map. Forecasts updated every 6 hours for the next 5 days.', search_placeholder:'Search station...', select_all:'All', locale:'en-GB' }
+};
+
+let currentLang = 'it';
+function t(key) { return LANGS[currentLang][key] || key; }
+
+function setLang(lang) {
+  currentLang = lang;
+  ['it','fr','de','en'].forEach(l => document.getElementById('btn-'+l).classList.toggle('active', l===lang));
+  document.getElementById('time-label').textContent = t('forecast');
+  document.getElementById('search-input').placeholder = t('search_placeholder');
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+  if (index.length) document.getElementById('time-display').textContent = formatDate(index[currentStep].forecast_time_iso);
+  if (currentPopupStation) showPopup(currentPopupStation, currentPopupData, currentPopupAllData);
+  buildTicks();
+}
+
+function weatherEmoji(code) {
+  if (code===0) return '☀️'; if (code===1) return '🌤️'; if (code===2) return '⛅'; if (code===3) return '☁️';
+  if ([45,48].includes(code)) return '🌫️'; if ([51,53,55,56,57].includes(code)) return '🌦️';
+  if ([61,63,65,66,67].includes(code)) return '🌧️'; if ([71,73,75,77,85,86].includes(code)) return '❄️';
+  if ([80,81,82].includes(code)) return '🌦️'; if ([95,96,99].includes(code)) return '⛈️'; return '🌡️';
+}
+
+function tempColor(temp) {
+  if (temp<=-10) return '#4fc3f7'; if (temp<=0) return '#81d4fa';
+  if (temp<=10) return '#a5d6a7'; if (temp<=20) return '#ffcc02'; return '#ff7043';
+}
+
+function formatDate(iso) {
+  return new Date(iso).toLocaleString(LANGS[currentLang].locale, { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
+}
+function formatDateShort(iso) {
+  return new Date(iso).toLocaleString(LANGS[currentLang].locale, { weekday:'short', day:'numeric' });
+}
+
+let map, index=[], allGeoJSON={}, currentStep=0;
+let markers={}, visibleStations=new Set();
+let currentPopupStation=null, currentPopupData=null, currentPopupAllData=null;
+let playing=false, playInterval=null, chartInstance=null, allStationNames=[];
+
+function initMap() {
+  map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://vectortiles.geo.admin.ch/styles/ch.swisstopo.basemap.vt/style.json',
+    center: [7.5, 46.6], zoom: 8, minZoom: 6, maxZoom: 14,
+  });
+  map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+  map.addControl(new maplibregl.ScaleControl({ unit:'metric' }), 'bottom-left');
+}
+
+function buildTicks() {
+  if (!index.length) return;
+  const ticks = document.getElementById('time-ticks');
+  ticks.innerHTML = '';
+  [...new Set([0,4,8,12,16,Math.min(19,index.length-1)])].forEach(i => {
+    if (i>=index.length) return;
+    const span = document.createElement('span');
+    span.textContent = formatDateShort(index[i].forecast_time_iso);
+    ticks.appendChild(span);
+  });
+}
+
+async function loadData() {
+  const idxResp = await fetch('data/index.json');
+  const idxData = await idxResp.json();
+  index = idxData.timesteps;
+  document.getElementById('time-slider').max = index.length - 1;
+  buildTicks();
+
+  document.getElementById('load-msg').textContent = 'Caricamento...';
+  const r0 = await fetch('data/' + index[0].file);
+  allGeoJSON[index[0].forecast_time_str] = await r0.json();
+
+  allStationNames = allGeoJSON[index[0].forecast_time_str].features.map(f=>f.properties.name).sort();
+  visibleStations = new Set(allStationNames);
+  buildStationList();
+  buildStationListMobile();
+
+  document.getElementById('loading').style.display = 'none';
+  renderStep(0);
+
+  for (let i=1; i<index.length; i++) {
+    const r = await fetch('data/'+index[i].file);
+    allGeoJSON[index[i].forecast_time_str] = await r.json();
+  }
+}
+
+function buildStationList(filter='') {
+  const list = document.getElementById('station-list');
+  list.innerHTML = '';
+  allStationNames.filter(n=>n.toLowerCase().includes(filter.toLowerCase())).forEach(name => {
+    const isVisible = visibleStations.has(name);
+    const temp = getCurrentTemp(name);
+    const div = document.createElement('div');
+    div.className = 'station-item'+(isVisible?' active':'');
+    div.innerHTML = `<div class="station-check">${isVisible?'✓':''}</div><div class="station-name">${name}</div><div class="station-temp" style="color:${temp!==null?tempColor(temp):'var(--text-muted)'}">${temp!==null?temp.toFixed(0)+'°':'—'}</div>`;
+    div.addEventListener('click', ()=>toggleStation(name));
+    list.appendChild(div);
+  });
+  document.getElementById('station-count').textContent = `${visibleStations.size} / ${allStationNames.length}`;
+}
+
+function getCurrentTemp(name) {
+  const gj = allGeoJSON[index[currentStep]?.forecast_time_str];
+  const f = gj?.features.find(f=>f.properties.name===name);
+  return f?.properties.temp_c !== null ? parseFloat(f.properties.temp_c) : null;
+}
+
+function toggleStation(name) {
+  if (visibleStations.has(name)) { visibleStations.delete(name); if (markers[name]) markers[name].getElement().style.display='none'; }
+  else { visibleStations.add(name); if (markers[name]) markers[name].getElement().style.display=''; }
+  buildStationList(document.getElementById('search-input').value);
+}
+
+function filterStations(val) { buildStationList(val); }
+
+let allSelected=true;
+function toggleSelectAll() {
+  allSelected=!allSelected;
+  if (allSelected) { allStationNames.forEach(n=>visibleStations.add(n)); Object.values(markers).forEach(m=>m.getElement().style.display=''); }
+  else { visibleStations.clear(); Object.values(markers).forEach(m=>m.getElement().style.display='none'); }
+  buildStationList(document.getElementById('search-input').value);
+}
+
+function renderStep(stepIdx) {
+  currentStep=stepIdx;
+  const step=index[stepIdx];
+  const gj=allGeoJSON[step.forecast_time_str];
+  if (!gj) return;
+
+  document.getElementById('time-display').textContent = formatDate(step.forecast_time_iso);
+  document.getElementById('time-slider').value = stepIdx;
+
+  gj.features.forEach(f => {
+    const p=f.properties, name=p.name;
+    const emoji=weatherEmoji(p.weathercode);
+    const temp=p.temp_c!==null?parseFloat(p.temp_c):null;
+    const color=temp!==null?tempColor(temp):'#fff';
+    const tempLabel=temp!==null?Math.round(temp)+'°':'—';
+    const isVisible=visibleStations.has(name);
+
+    if (markers[name]) {
+      const el=markers[name].getElement();
+      el.querySelector('.icon-wrap').textContent=emoji;
+      el.querySelector('.icon-wrap').style.borderColor=color+'88';
+      el.querySelector('.temp-label').textContent=tempLabel;
+      el.style.display=isVisible?'':'none';
+    } else {
+      const el=document.createElement('div');
+      el.className='weather-marker';
+      el.innerHTML=`<div class="icon-wrap" style="border-color:${color}88">${emoji}</div><div class="temp-label">${tempLabel}</div>`;
+      el.style.display=isVisible?'':'none';
+      el.addEventListener('click',()=>{ const data=getAllStationData(name); if(isMobile()) showMobileDetail(name,p,data); else showPopup(name,p,data); });
+      markers[name]=new maplibregl.Marker({element:el,anchor:'center'})
+        .setLngLat([f.geometry.coordinates[0],f.geometry.coordinates[1]]).addTo(map);
+    }
+  });
+
+  buildStationList(document.getElementById('search-input').value);
+  buildStationListMobile(document.getElementById('search-input-mobile')?.value||'');
+  if (currentPopupStation) {
+    const f=gj.features.find(f=>f.properties.name===currentPopupStation);
+    if (f) showPopup(currentPopupStation,f.properties,currentPopupAllData);
+  }
+}
+
+function getAllStationData(name) {
+  return index.map(step=>{
+    const gj=allGeoJSON[step.forecast_time_str];
+    const f=gj?.features.find(f=>f.properties.name===name);
+    return f?{time:step.forecast_time_iso,...f.properties}:null;
+  }).filter(Boolean);
+}
+
+function showPopup(name, props, allData) {
+  currentPopupStation=name; currentPopupData=props; currentPopupAllData=allData;
+  const temp=props.temp_c!==null?parseFloat(props.temp_c):null;
+  const color=temp!==null?tempColor(temp):'#fff';
+  const emoji=weatherEmoji(props.weathercode);
+  const fmt=v=>(v!==null&&v!==undefined)?parseFloat(v):null;
+  const temps=allData.map(d=>fmt(d.temp_c)).filter(v=>v!==null);
+  const minT=temps.length?Math.min(...temps).toFixed(1):'—';
+  const maxT=temps.length?Math.max(...temps).toFixed(1):'—';
+  const v=(val,dec,unit)=>val!==null&&val!==undefined?parseFloat(val).toFixed(dec)+`<span> ${unit}</span>`:'—';
+
+  const panel=document.getElementById('detail-panel');
+  panel.innerHTML=`
+    <div class="popup-header">
+      <div class="popup-icon">${emoji}</div>
+      <div style="flex:1">
+        <div class="popup-title">${name}</div>
+        <div class="popup-time">${formatDate(props.forecast_time_iso)}</div>
+        <div class="popup-temp-main" style="color:${color}">${temp!==null?temp.toFixed(1)+'°C':'—'}</div>
+      </div>
+      <button class="popup-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="popup-body">
+      <div class="popup-grid">
+        <div class="popup-stat"><div class="popup-stat-label">${t('popup_temp')}</div><div class="popup-stat-value">${minT}° <span>/ ${maxT}°C</span></div></div>
+        <div class="popup-stat"><div class="popup-stat-label">${t('popup_prob')}</div><div class="popup-stat-value">${v(props.precip_prob_pct,0,'%')}</div></div>
+        <div class="popup-stat"><div class="popup-stat-label">${t('popup_wind')}</div><div class="popup-stat-value">${v(props.wind_kmh,0,'km/h')}</div></div>
+        <div class="popup-stat"><div class="popup-stat-label">${t('popup_gust')}</div><div class="popup-stat-value">${v(props.gust_kmh,0,'km/h')}</div></div>
+        <div class="popup-stat"><div class="popup-stat-label">${t('popup_precip')}</div><div class="popup-stat-value">${v(props.precip_mm,1,'mm')}</div></div>
+        <div class="popup-stat"><div class="popup-stat-label">${t('popup_snow')}</div><div class="popup-stat-value">${v(props.snowfall_cm,1,'cm')}</div></div>
+        <div class="popup-stat" style="grid-column:1/-1"><div class="popup-stat-label">${t('popup_zero')}</div><div class="popup-stat-value">${props.zero_level_m!==null?Math.round(props.zero_level_m)+'<span> m</span>':'—'}</div></div>
+      </div>
+      <div class="popup-chart-title">${t('popup_chart')}</div>
+      <div class="popup-chart-wrap"><canvas id="temp-chart"></canvas></div>
+    </div>`;
+  panel.style.display='block';
+  setTimeout(()=>drawChart(allData),60);
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').style.display='none';
+  currentPopupStation=null;
+}
+
+function drawChart(allData) {
+  const canvas=document.getElementById('temp-chart');
+  if (!canvas) return;
+  if (chartInstance) chartInstance.destroy();
+  const loc=LANGS[currentLang].locale;
+  const sampled=allData.filter((_,i)=>i%2===0);
+  chartInstance=new Chart(canvas,{
+    type:'line',
+    data:{labels:sampled.map(d=>new Date(d.time).toLocaleString(loc,{weekday:'short',hour:'2-digit'})),datasets:[
+      {label:'°C',data:sampled.map(d=>parseFloat(d.temp_c)),borderColor:'#4fc3f7',backgroundColor:'rgba(79,195,247,0.1)',borderWidth:2,pointRadius:2,tension:0.4,fill:true,yAxisID:'y'},
+      {label:'neve',data:sampled.map(d=>parseFloat(d.snowfall_cm)||0),borderColor:'#e3f2fd',backgroundColor:'rgba(227,242,253,0.15)',borderWidth:1.5,pointRadius:0,tension:0.4,fill:true,yAxisID:'y2'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+      x:{ticks:{color:'#6b7a99',font:{size:9,family:'DM Mono'},maxTicksLimit:6},grid:{color:'rgba(255,255,255,0.04)'}},
+      y:{ticks:{color:'#4fc3f7',font:{size:9,family:'DM Mono'},callback:v=>v+'°'},grid:{color:'rgba(255,255,255,0.04)'},position:'left'},
+      y2:{ticks:{color:'#e3f2fd',font:{size:9,family:'DM Mono'},callback:v=>v+'cm'},grid:{display:false},position:'right',min:0}
+    }}
+  });
+}
+
+document.getElementById('time-slider').addEventListener('input',e=>renderStep(parseInt(e.target.value)));
+
+function togglePlay() {
+  playing=!playing;
+  document.getElementById('play-btn').textContent=playing?'⏸':'▶';
+  if (playing) {
+    playInterval=setInterval(()=>{
+      const next=(currentStep+1)%index.length;
+      renderStep(next);
+      if (next===index.length-1){playing=false;document.getElementById('play-btn').textContent='▶';clearInterval(playInterval);}
+    },800);
+  } else { clearInterval(playInterval); }
+}
+
+
+// ── MOBILE ────────────────────────────────────────────────────────────────
+const isMobile = () => window.innerWidth <= 768;
+
+function initMobile() {
+  if (!isMobile()) return;
+  document.getElementById('mobile-btns').style.display = 'flex';
+}
+
+function toggleMobileDrawer(side) {
+  const left = document.getElementById('mobile-drawer-left');
+  const right = document.getElementById('mobile-drawer-right');
+  if (side === 'left') {
+    left.classList.toggle('open');
+    right.classList.remove('open');
+    document.getElementById('mob-btn-list').classList.toggle('active', left.classList.contains('open'));
+    document.getElementById('mob-btn-legend').classList.remove('active');
+  } else {
+    right.classList.toggle('open');
+    left.classList.remove('open');
+    document.getElementById('mob-btn-legend').classList.toggle('active', right.classList.contains('open'));
+    document.getElementById('mob-btn-list').classList.remove('active');
+  }
+}
+
+function buildStationListMobile(filter='') {
+  if (!isMobile()) return;
+  const list = document.getElementById('station-list-mobile');
+  if (!list) return;
+  list.innerHTML = '';
+  allStationNames.filter(n=>n.toLowerCase().includes(filter.toLowerCase())).forEach(name => {
+    const isVisible = visibleStations.has(name);
+    const temp = getCurrentTemp(name);
+    const div = document.createElement('div');
+    div.className = 'station-item'+(isVisible?' active':'');
+    div.style.cssText = 'display:flex;align-items:center;gap:7px;padding:8px 7px;border-radius:7px;cursor:pointer;font-size:13px;';
+    div.innerHTML = `<div class="station-check" style="width:15px;height:15px;border:1.5px solid var(--text-muted);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;${isVisible?'background:var(--accent);border-color:var(--accent);color:var(--bg)':''}">${isVisible?'✓':''}</div><div style="flex:1;color:var(--text)">${name}</div><div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:${temp!==null?tempColor(temp):'var(--text-muted)'}">${temp!==null?temp.toFixed(0)+'°':'—'}</div>`;
+    div.addEventListener('click', ()=>{ toggleStation(name); buildStationListMobile(document.getElementById('search-input-mobile').value); });
+    list.appendChild(div);
+  });
+  const cnt = document.getElementById('station-count-mobile');
+  if (cnt) cnt.textContent = `${visibleStations.size} / ${allStationNames.length}`;
+}
+
+function filterStationsMobile(val) { buildStationListMobile(val); }
+
+function showMobileDetail(name, props, allData) {
+  currentPopupStation=name; currentPopupData=props; currentPopupAllData=allData;
+  const temp=props.temp_c!==null?parseFloat(props.temp_c):null;
+  const color=temp!==null?tempColor(temp):'#fff';
+  const emoji=weatherEmoji(props.weathercode);
+  const fmt=v=>(v!==null&&v!==undefined)?parseFloat(v):null;
+  const temps=allData.map(d=>fmt(d.temp_c)).filter(v=>v!==null);
+  const minT=temps.length?Math.min(...temps).toFixed(1):'—';
+  const maxT=temps.length?Math.max(...temps).toFixed(1):'—';
+  const v=(val,dec,unit)=>val!==null&&val!==undefined?parseFloat(val).toFixed(dec)+` ${unit}`:'—';
+
+  const content = document.getElementById('mobile-detail-content');
+  content.innerHTML = `
+    <div style="padding:10px 16px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;position:relative;">
+      <div style="font-size:32px;line-height:1;flex-shrink:0">${emoji}</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700">${name}</div>
+        <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text-muted);margin-top:1px">${formatDate(props.forecast_time_iso)}</div>
+        <div style="font-size:28px;font-weight:800;color:${color};line-height:1;margin-top:2px">${temp!==null?temp.toFixed(1)+'°C':'—'}</div>
+      </div>
+      <button onclick="closeMobileDetail()" style="position:absolute;top:8px;right:10px;background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;padding:4px 8px;">✕</button>
+    </div>
+    <div style="padding:10px 14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+        <div style="background:var(--surface2);border-radius:7px;padding:8px 10px"><div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px">${t('popup_temp')}</div><div style="font-size:14px;font-weight:600">${minT}° / ${maxT}°C</div></div>
+        <div style="background:var(--surface2);border-radius:7px;padding:8px 10px"><div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px">${t('popup_prob')}</div><div style="font-size:14px;font-weight:600">${v(props.precip_prob_pct,0,'%')}</div></div>
+        <div style="background:var(--surface2);border-radius:7px;padding:8px 10px"><div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px">${t('popup_wind')}</div><div style="font-size:14px;font-weight:600">${v(props.wind_kmh,0,'km/h')}</div></div>
+        <div style="background:var(--surface2);border-radius:7px;padding:8px 10px"><div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px">${t('popup_gust')}</div><div style="font-size:14px;font-weight:600">${v(props.gust_kmh,0,'km/h')}</div></div>
+        <div style="background:var(--surface2);border-radius:7px;padding:8px 10px"><div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px">${t('popup_snow')}</div><div style="font-size:14px;font-weight:600">${v(props.snowfall_cm,1,'cm')}</div></div>
+        <div style="background:var(--surface2);border-radius:7px;padding:8px 10px"><div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px">${t('popup_zero')}</div><div style="font-size:14px;font-weight:600">${props.zero_level_m!==null?Math.round(props.zero_level_m)+' m':'—'}</div></div>
+      </div>
+      <div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">${t('popup_chart')}</div>
+      <div style="height:90px;position:relative"><canvas id="temp-chart-mobile"></canvas></div>
+    </div>`;
+
+  const detail = document.getElementById('mobile-detail');
+  detail.classList.add('open');
+  // Close drawers
+  document.getElementById('mobile-drawer-left').classList.remove('open');
+  document.getElementById('mobile-drawer-right').classList.remove('open');
+
+  setTimeout(()=>{
+    const canvas = document.getElementById('temp-chart-mobile');
+    if (!canvas) return;
+    if (chartInstance) chartInstance.destroy();
+    const loc=LANGS[currentLang].locale;
+    const sampled=allData.filter((_,i)=>i%2===0);
+    chartInstance=new Chart(canvas,{
+      type:'line',
+      data:{labels:sampled.map(d=>new Date(d.time).toLocaleString(loc,{weekday:'short',hour:'2-digit'})),datasets:[
+        {label:'°C',data:sampled.map(d=>parseFloat(d.temp_c)),borderColor:'#4fc3f7',backgroundColor:'rgba(79,195,247,0.1)',borderWidth:2,pointRadius:2,tension:0.4,fill:true,yAxisID:'y'},
+        {label:'neve',data:sampled.map(d=>parseFloat(d.snowfall_cm)||0),borderColor:'#e3f2fd',backgroundColor:'rgba(227,242,253,0.15)',borderWidth:1.5,pointRadius:0,tension:0.4,fill:true,yAxisID:'y2'}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+        x:{ticks:{color:'#6b7a99',font:{size:9,family:'DM Mono'},maxTicksLimit:6},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{ticks:{color:'#4fc3f7',font:{size:9,family:'DM Mono'},callback:v=>v+'°'},grid:{color:'rgba(255,255,255,0.04)'},position:'left'},
+        y2:{ticks:{color:'#e3f2fd',font:{size:9,family:'DM Mono'},callback:v=>v+'cm'},grid:{display:false},position:'right',min:0}
+      }}
+    });
+  }, 60);
+}
+
+function closeMobileDetail() {
+  document.getElementById('mobile-detail').classList.remove('open');
+  currentPopupStation = null;
+}
+
+// Override renderStep per mobile: usa showMobileDetail invece di showPopup
+const _origRenderStep = renderStep;
+
+initMap();
+map.on('load', () => { loadData(); initMobile(); });
+</script>
+</body>
+</html>

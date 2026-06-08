@@ -1,0 +1,37 @@
+{
+  "area_frana_km2": 3.2,
+  "n_poligoni_frana": 124,
+  "buffer_results": {
+    "diretto": {
+      "buffer_m": 0,
+      "edifici_colpiti": 194,
+      "strade_m": 13429.6,
+      "strade_km": 13.43
+    },
+    "100m": {
+      "buffer_m": 100,
+      "edifici_colpiti": 765,
+      "strade_m": 57935.5,
+      "strade_km": 57.94
+    },
+    "250m": {
+      "buffer_m": 250,
+      "edifici_colpiti": 1181,
+      "strade_m": 87984.2,
+      "strade_km": 87.98
+    },
+    "500m": {
+      "buffer_m": 500,
+      "edifici_colpiti": 1342,
+      "strade_m": 110056.9,
+      "strade_km": 110.06
+    }
+  },
+  "esposizione_edifici": {
+    "oltre_500m": 736,
+    "100m": 571,
+    "250m": 416,
+    "diretta": 194,
+    "500m": 161
+  }
+}
