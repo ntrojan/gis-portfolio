@@ -427,7 +427,7 @@ st.markdown("""<style>
 [data-testid="stPageLink-NavLink"]:hover p, [data-testid="stPageLink-NavLink"]:hover span { color:var(--accent) !important; }
 </style>""", unsafe_allow_html=True)
 
-st.page_link("app.py", label="Home", icon="🏠")
+st.page_link("app.py", label="← Home")
 
 # ════════════════════════════════════════════════════════════════════
 #  WELCOME SCREEN

@@ -2,7 +2,6 @@ import streamlit as st
 
 st.set_page_config(
     page_title="MagicMeteo",
-    page_icon="⛷️",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -21,7 +20,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.page_link("app.py", label="Home", icon="🏠")
+st.page_link("app.py", label="← Home")
 
 st.components.v1.iframe(
     "https://ntrojan.github.io/gis-portfolio/static/magicmeteo/index.html",

@@ -27,6 +27,7 @@
 
             <div id="filters">
                 <div class="filters-title">Filters</div>
+                <div class="filters-hint">Year, Canton and Wolf ID accept multiple values: Ctrl / Cmd to add, Shift for a range.</div>
 
                 <div>
                     <label for="filter-gender">Gender</label>
@@ -39,8 +40,7 @@
 
                 <div>
                     <label for="filter-year">Year</label>
-                    <select id="filter-year" onchange="applyFilters()">
-                        <option value="">All</option>
+                    <select id="filter-year" multiple size="5" onchange="applyFilters()">
                         <option value="1999">1999</option>
                         <option value="2000">2000</option>
                         <option value="2001">2001</option>
@@ -70,8 +70,7 @@
 
                 <div>
                     <label for="filter-canton">Canton</label>
-                    <select id="filter-canton" onchange="applyFilters()">
-                        <option value="">All</option>
+                    <select id="filter-canton" multiple size="5" onchange="applyFilters()">
                         <option value="Aargau">Aargau</option>
                         <option value="Appenzell Ausserrhoden">Appenzell Ausserrhoden</option>
                         <option value="Bern">Bern</option>
@@ -94,8 +93,7 @@
 
                 <div>
                     <label for="filter-wolf-id">Wolf ID</label>
-                    <select id="filter-wolf-id" onchange="applyFilters()">
-                        <option value="">All</option>
+                    <select id="filter-wolf-id" multiple size="5" onchange="applyFilters()">
                         <option value="F01">F01</option>
                         <option value="F05">F05</option>
                         <option value="F07">F07</option>
@@ -179,15 +177,17 @@
             </div>
         </div>
 
-        <!-- Right column: charts + time slider -->
+        <!-- Right column: charts -->
         <div id="right-col">
             <div id="year-chart" class="chart"></div>
             <div id="canton-chart" class="chart"></div>
-            <div id="scatter-plot" class="chart"></div>
-            <div id="time-slider-container">
-                <span class="slider-label">Year</span>
-                <input type="range" id="time-slider" min="1999" max="2022" step="1" value="1999" />
-                <label id="year-label">1999</label>
+            <div id="scatter-plot" class="chart">
+                <div id="scatter-svg"></div>
+                <div id="time-slider-container">
+                    <span class="slider-label">Year</span>
+                    <input type="range" id="time-slider" min="1999" max="2022" step="1" value="1999" />
+                    <label id="year-label">1999</label>
+                </div>
             </div>
         </div>
 

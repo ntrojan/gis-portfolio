@@ -2,7 +2,6 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Nicolò Trojan · GIS Portfolio",
-    page_icon="🌍",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -54,9 +53,12 @@ section[data-testid="stSidebar"] { display: none !important; }
 .proj-card:hover { box-shadow: 0 8px 28px rgba(26,32,48,0.10); }
 .proj-card::before { content: ''; position: absolute; top: 0; left: 0;
                      width: 100%; height: 3px; background: var(--card-color, var(--accent)); }
-.proj-num { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem;
-            color: var(--text-faint); margin-bottom: 0.8rem; }
-.proj-emoji { font-size: 1.8rem; margin-bottom: 0.6rem; line-height: 1; }
+.proj-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem; }
+.proj-num { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--text-faint); }
+.proj-kind { font-family: 'IBM Plex Mono', monospace; font-size: 0.56rem; letter-spacing: 0.07em;
+             text-transform: uppercase; color: var(--card-color, var(--accent));
+             border: 1px solid var(--card-color, var(--accent)); border-radius: 20px;
+             padding: 0.13rem 0.55rem; line-height: 1; }
 .proj-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
 .proj-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 0.7rem; }
 .proj-note { display: inline-block; background: #fff4ed; border: 1px solid #f3c9b3;
@@ -102,8 +104,10 @@ section[data-testid="stSidebar"] { display: none !important; }
 <div class="card-grid">
 
   <div class="proj-card" style="--card-color:#4fc3f7">
-    <div class="proj-num">01</div>
-    <div class="proj-emoji">⛷️</div>
+    <div class="proj-top">
+      <span class="proj-num">01</span>
+      <span class="proj-kind">Web app</span>
+    </div>
     <div class="proj-title">MagicMeteo</div>
     <div class="proj-desc">Interactive weather map for every Magic Pass resort in Switzerland.
     5-day forecasts with time animation, multilingual and responsive.</div>
@@ -117,8 +121,10 @@ section[data-testid="stSidebar"] { display: none !important; }
   </div>
 
   <div class="proj-card" style="--card-color:#81c784">
-    <div class="proj-num">02</div>
-    <div class="proj-emoji">🐺</div>
+    <div class="proj-top">
+      <span class="proj-num">02</span>
+      <span class="proj-kind">Dashboard</span>
+    </div>
     <div class="proj-title">Wolves in Switzerland</div>
     <div class="proj-desc">Spatial and temporal analysis of wolf observations in Switzerland
     between 1999 and 2022, based on KORA genetic tracking data.</div>
@@ -133,8 +139,10 @@ section[data-testid="stSidebar"] { display: none !important; }
   </div>
 
   <div class="proj-card" style="--card-color:#e0552d">
-    <div class="proj-num">03</div>
-    <div class="proj-emoji">🏔️</div>
+    <div class="proj-top">
+      <span class="proj-num">03</span>
+      <span class="proj-kind">Dashboard</span>
+    </div>
     <div class="proj-title">Sorte Landslide</div>
     <div class="proj-desc">Geospatial dashboard on the Sorte landslide (Mesolcina, GR) of 21 June 2024.
     Sentinel-2 change detection, slope morphology and exposure of elements at risk.</div>

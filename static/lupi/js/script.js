@@ -7,18 +7,29 @@ const switzerlandBounds = [[45.817993, 5.955911], [47.808455, 10.49205]];
 // Initialisation de la carte
 const map = L.map("map", {
     maxBounds: switzerlandBounds,
-    maxBoundsViscosity: 1.0
-}).setView([46.8182, 8.2275], 8);
+    maxBoundsViscosity: 1.0,
+    zoomSnap: 0.5,
+    minZoom: 7
+});
 const pathsLayer = L.layerGroup().addTo(map);
-const cheminsPath = './data/chemins.geojson'; 
-const geojsonPath = './data/spot_all.geojson'; 
+const cheminsPath = './data/chemins.geojson';
+const geojsonPath = './data/spot_all.geojson';
 
 // Ajouter le layer Tile
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19, 
-    minZoom: 8, 
+    maxZoom: 19,
+    minZoom: 7,
     attribution: "© OpenStreetMap contributors"
 }).addTo(map);
+
+// Frame Switzerland, padding for the side panels so no canton stays hidden
+function frameSwitzerland() {
+    const narrow = window.innerWidth <= 820;
+    map.fitBounds(switzerlandBounds, narrow
+        ? { padding: [20, 20] }
+        : { paddingTopLeft: [262, 28], paddingBottomRight: [Math.round(window.innerWidth * 0.24) + 28, 52] });
+}
+frameSwitzerland();
 
 //##########################################################################################################################################################
 //2. Clusters
@@ -169,65 +180,76 @@ fetch(cheminsPath)
 
 //4.1 Animations pour les chemins ###############################################################################################################
 
-// Fonction animation chemins
-function showWolfPaths(wolfID) {
-    const paths = pathsByWolf[wolfID];
+// Palette used to tell apart the paths of several selected wolves
+const PATH_PALETTE = ['#81c784', '#4fc3f7', '#f48fb1', '#ffb74d', '#ba68c8', '#4db6ac', '#e57373', '#fff176'];
 
-    if (!paths || paths.length === 0) {
-        console.warn(`No path found for ${wolfID}`);
-        pathsLayer.clearLayers();
-        return;
+// Draw the path(s) of one or more wolves
+function showWolfPaths(wolfIDs) {
+    // Accept a single ID (string) or an array of IDs
+    const ids = Array.isArray(wolfIDs) ? wolfIDs : [wolfIDs];
+
+    // Clear existing paths and any running animation
+    pathsLayer.clearLayers();
+    if (animatedLayer) {
+        map.removeLayer(animatedLayer);
+        clearInterval(animatedLayer.animationInterval);
+        animatedLayer = null;
     }
 
-    // Ordre chrono
-    const sortedPaths = paths.sort((a, b) => {
-        const dateA = new Date(a.properties.joint_date);
-        const dateB = new Date(b.properties.joint_date);
-        return dateA - dateB;
-    });
+    const allCoordinates = [];
 
-    // Supprimer chemins existants
-    pathsLayer.clearLayers();
-
-    // Lat-long
-    const coordinates = [];
-
-    // Extraction coordonnées dans l'ordre chrono
-    sortedPaths.forEach(path => {
-        const coords = path.geometry.coordinates;
-
-        if (!coords || coords.length === 0) {
-            console.warn("Segment without coordinates, skipped.");
+    ids.forEach((wolfID, i) => {
+        const paths = pathsByWolf[wolfID];
+        if (!paths || paths.length === 0) {
+            console.warn(`No path found for ${wolfID}`);
             return;
         }
 
-        coords.forEach(coord => {
-            const latLng = [coord[1], coord[0]]; 
-            coordinates.push(latLng);
+        // Chronological order
+        const sortedPaths = [...paths].sort((a, b) =>
+            new Date(a.properties.joint_date) - new Date(b.properties.joint_date));
 
-            // Point observation
-            L.circleMarker(latLng, {
-                radius: 5, 
-                color: 'red', 
-                weight: 1,
-                fillColor: 'white', 
-                fillOpacity: 0.7 
-            })
-            .bindPopup(`Observation: ${JSON.stringify(path.properties)}`)
-            .addTo(pathsLayer); 
+        const coordinates = [];
+        const color = PATH_PALETTE[i % PATH_PALETTE.length];
+
+        sortedPaths.forEach(path => {
+            const coords = path.geometry.coordinates;
+            if (!coords || coords.length === 0) {
+                console.warn("Segment without coordinates, skipped.");
+                return;
+            }
+            coords.forEach(coord => {
+                const latLng = [coord[1], coord[0]];
+                coordinates.push(latLng);
+                allCoordinates.push(latLng);
+
+                // Observation point
+                L.circleMarker(latLng, {
+                    radius: 4,
+                    color: color,
+                    weight: 1.5,
+                    fillColor: '#0a0e1a',
+                    fillOpacity: 0.85
+                })
+                .bindPopup(`Observation: ${JSON.stringify(path.properties)}`)
+                .addTo(pathsLayer);
+            });
         });
+
+        if (coordinates.length === 0) return;
+
+        // Trace the path
+        L.polyline(coordinates, { color: color, weight: 2, opacity: 0.9 }).addTo(pathsLayer);
+
+        // Animate only when a single wolf is selected
+        if (ids.length === 1) animatePath(coordinates);
     });
 
-    // Trace chemin
-    const line = L.polyline(coordinates, { color: 'black', weight: 2 }).addTo(pathsLayer);
-
-    // Zoom auto sur le chemin
-    const bounds = line.getBounds(); 
-    map.fitBounds(bounds, { padding: [20, 20] }); 
-
-    // Démarrer animation 
-    animatePath(coordinates);
+    // Zoom to fit every drawn path
+    if (allCoordinates.length > 0) {
+        map.fitBounds(L.latLngBounds(allCoordinates), { padding: [25, 25] });
     }
+}
 
     function animatePath(coordinates) {
         let index = 0;
@@ -442,71 +464,78 @@ function updateWolfAnalysisPanel(wolfID, totalDistance, uniqueCommunes) {
     `;
 }
 
-//4.4 Filtres #####################################################################################################################################
+//4.4 Filters #####################################################################################################################################
 
-// Fonction application filtres
+// Read all selected values of a (multi-)select as an array, ignoring the empty option
+function getSelectedValues(id) {
+    return Array.from(document.getElementById(id).selectedOptions)
+        .map(o => o.value)
+        .filter(v => v !== "");
+}
+
+// Apply the filters
 function applyFilters() {
-    const gender = document.getElementById("filter-gender").value;
-    const year = document.getElementById("filter-year").value;
-    const canton = document.getElementById("filter-canton").value;
-    const wolfID = document.getElementById("filter-wolf-id").value;
+    const gender = document.getElementById("filter-gender").value;      // single
+    const years = getSelectedValues("filter-year");                     // multiple / range
+    const cantons = getSelectedValues("filter-canton");                 // multiple
+    const wolfIDs = getSelectedValues("filter-wolf-id");                // multiple
 
-    // Filtrer les données
-    filteredData = data.filter(item => {
-        return (!gender || item.gender === gender) &&
-               (!year || item.year === year) &&
-               (!canton || item.canton === canton) &&
-               (!wolfID || item.wolfID === wolfID);
-    });
+    // Filter the data (empty selection = no constraint = all)
+    filteredData = data.filter(item =>
+        (!gender || item.gender === gender) &&
+        (years.length === 0 || years.includes(item.year)) &&
+        (cantons.length === 0 || cantons.includes(item.canton)) &&
+        (wolfIDs.length === 0 || wolfIDs.includes(item.wolfID))
+    );
 
-    // Supprimer animations précédentes
+    // Stop any running animation
     if (animatedLayer) {
         map.removeLayer(animatedLayer);
+        clearInterval(animatedLayer.animationInterval);
         animatedLayer = null;
     }
 
-    // Supprimer marqueurs si un loup est sélectionné
-    if (wolfID) {
-        markers.clearLayers(); 
-        showWolfPaths(wolfID); 
+    // If one or more wolves are selected, draw their paths; otherwise show the filtered markers
+    if (wolfIDs.length > 0) {
+        markers.clearLayers();
+        showWolfPaths(wolfIDs);
     } else {
-        // Si aucun ID sélectionné afficher les marqueurs filtrés
         addAllMarkers(filteredData);
-        pathsLayer.clearLayers(); 
+        pathsLayer.clearLayers();
     }
 
-    // Mise à jour des graphiques avec données filtrées
+    // Refresh the charts with the filtered data
     updateCharts(filteredData);
 }
 
 function resetFilters() {
-    // Réinitialiser valeurs filtre
+    // Clear filter values (single + multi-select)
     document.getElementById("filter-gender").value = "";
-    document.getElementById("filter-year").value = "";
-    document.getElementById("filter-canton").value = "";
-    document.getElementById("filter-wolf-id").value = "";
+    ["filter-year", "filter-canton", "filter-wolf-id"].forEach(id => {
+        Array.from(document.getElementById(id).options).forEach(o => o.selected = false);
+    });
 
-    // Restaurer données d'origine
+    // Restore the original data
     filteredData = data;
 
-    // Mise à jour carte 
+    // Refresh the map
     markers.clearLayers();
     addAllMarkers(filteredData);
 
-    // Supprimer les chemins existants
+    // Remove existing paths
     pathsLayer.clearLayers();
 
-    // Arrêter l'animation active 
+    // Stop the active animation
     if (animatedLayer) {
         map.removeLayer(animatedLayer);
-        clearInterval(animatedLayer.animationInterval); 
+        clearInterval(animatedLayer.animationInterval);
         animatedLayer = null;
     }
 
-    // Rétablissement zoom min
-    map.fitBounds(switzerlandBounds, { padding: [20, 20] });
+    // Reset the default framing
+    frameSwitzerland();
 
-    // Mise à jour graphiques
+    // Refresh the charts
     updateCharts(filteredData);
 }
 
@@ -680,15 +709,15 @@ function createCantonChartStatic(data) {
 
 // 4.5.c Lat-long time-travel chart
 function createTimeTravelScatterPlot(originalData) {
-    const container = document.getElementById("scatter-plot");
+    const container = document.getElementById("scatter-svg");
 
-    // Dimension et marges reactifs
+    // Reactive dimensions and margins
     const margin = { top: 40, right: 20, bottom: 40, left: 50 };
     const width = container.clientWidth - margin.left - margin.right;
     const height = container.clientHeight - margin.top - margin.bottom;
 
-    // Reactivité SVG
-    const svg = d3.select("#scatter-plot").html("").append("svg")
+    // Reactive SVG
+    const svg = d3.select("#scatter-svg").html("").append("svg")
         .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
         .attr("preserveAspectRatio", "xMidYMid meet")
         .append("g")

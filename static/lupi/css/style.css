@@ -105,10 +105,18 @@ body {
     flex-direction: column;
     gap: 9px;
 }
+#filters {
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+}
 #filters .filters-title {
     font-family: 'DM Mono', monospace; font-size: 9px;
     text-transform: uppercase; letter-spacing: 0.5px;
-    color: var(--text-muted); margin-bottom: 2px;
+    color: var(--text-muted);
+}
+#filters .filters-hint {
+    font-size: 9px; line-height: 1.45; color: var(--text-muted);
+    font-family: 'DM Mono', monospace; margin-bottom: 2px;
 }
 #filters label {
     display: block; font-size: 10px; font-weight: 600;
@@ -129,6 +137,18 @@ body {
 }
 #filters select:focus { border-color: var(--accent); }
 #filters select option { background: var(--surface); color: var(--text); }
+
+/* Multi-select (Year / Canton / Wolf ID) */
+#filters select[multiple] { padding: 3px; height: auto; cursor: default; }
+#filters select[multiple] option {
+    padding: 3px 7px; border-radius: 5px; margin-bottom: 1px; cursor: pointer;
+}
+#filters select[multiple] option:checked {
+    color: var(--bg);
+    box-shadow: 0 0 10px 100px var(--accent) inset;  /* cross-browser selected highlight */
+}
+#filters select[multiple]::-webkit-scrollbar { width: 4px; }
+#filters select[multiple]::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
 
 #reset-filters {
     margin-top: 2px;
@@ -170,17 +190,18 @@ body {
     min-height: 0;
 }
 
-/* time slider sits inside the right column, under the scatter plot */
+/* Time-travel panel: chart on top, year slider integrated at the bottom */
+#scatter-plot { display: flex; flex-direction: column; }
+#scatter-svg { flex: 1 1 0; min-height: 0; }
+
 #time-slider-container {
-    background: rgba(10,14,26,0.90);
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 9px 14px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     gap: 11px;
-    flex-shrink: 0;
+    margin-top: 4px;
+    padding: 8px 4px 2px;
+    border-top: 1px solid var(--border);
 }
 #time-slider-container .slider-label {
     font-family: 'DM Mono', monospace; font-size: 9px;
