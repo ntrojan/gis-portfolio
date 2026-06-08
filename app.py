@@ -58,7 +58,10 @@ section[data-testid="stSidebar"] { display: none !important; }
             color: var(--text-faint); margin-bottom: 0.8rem; }
 .proj-emoji { font-size: 1.8rem; margin-bottom: 0.6rem; line-height: 1; }
 .proj-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
-.proj-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 1rem; }
+.proj-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 0.7rem; }
+.proj-note { display: inline-block; background: #fff4ed; border: 1px solid #f3c9b3;
+             color: #c2562a; border-radius: 6px; padding: 0.2rem 0.55rem; margin-bottom: 1rem;
+             font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; line-height: 1.4; }
 .proj-tech { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
 .tech-pill { background: var(--bg); border: 1px solid var(--border); border-radius: 20px;
              padding: 0.15rem 0.6rem; font-family: 'IBM Plex Mono', monospace;
@@ -77,9 +80,9 @@ section[data-testid="stSidebar"] { display: none !important; }
   <div class="hero-eyebrow">GIS Portfolio</div>
   <div class="hero-name">Nicolò Trojan</div>
   <div class="hero-bio">
-    Geografo specializzato in <b>GIS e visualizzazione spaziale</b>. Creo dashboard interattive,
-    plugin QGIS e processi di automazione geospaziale su temi che mi stanno a cuore —
-    dall'ambiente alpino alla mobilità, dalla fauna selvatica ai rischi naturali.
+    Geographer specialised in <b>GIS and spatial visualisation</b>. Here I publish dashboards,
+    plugins and other items on a range of topics I care about: from the alpine environment
+    to mobility, from wildlife to natural hazards.
   </div>
   <div class="hero-tags">
     <span class="tag">GIS</span>
@@ -94,7 +97,7 @@ section[data-testid="stSidebar"] { display: none !important; }
   </div>
 </div>
 
-<div class="section-label">Progetti selezionati</div>
+<div class="section-label">Selected projects</div>
 
 <div class="card-grid">
 
@@ -102,45 +105,46 @@ section[data-testid="stSidebar"] { display: none !important; }
     <div class="proj-num">01</div>
     <div class="proj-emoji">⛷️</div>
     <div class="proj-title">MagicMeteo</div>
-    <div class="proj-desc">Mappa meteorologica interattiva per tutti i resort del Magic Pass in Svizzera.
-    Previsioni a 5 giorni con animazione temporale, multilingual e responsive.</div>
+    <div class="proj-desc">Interactive weather map for every Magic Pass resort in Switzerland.
+    5-day forecasts with time animation, multilingual and responsive.</div>
     <div class="proj-tech">
       <span class="tech-pill">MapLibre GL</span>
       <span class="tech-pill">Open-Meteo API</span>
       <span class="tech-pill">Chart.js</span>
       <span class="tech-pill">JavaScript</span>
     </div>
-    <a class="proj-btn" href="/MagicMeteo" target="_self">Apri →</a>
+    <a class="proj-btn" href="/MagicMeteo" target="_self">Open →</a>
   </div>
 
   <div class="proj-card" style="--card-color:#81c784">
     <div class="proj-num">02</div>
     <div class="proj-emoji">🐺</div>
-    <div class="proj-title">Lupi in Svizzera</div>
-    <div class="proj-desc">Analisi spaziale e temporale delle osservazioni di lupi in Svizzera
-    tra il 1999 e il 2022, basata sui dati di tracciamento genetico KORA.</div>
+    <div class="proj-title">Wolves in Switzerland</div>
+    <div class="proj-desc">Spatial and temporal analysis of wolf observations in Switzerland
+    between 1999 and 2022, based on KORA genetic tracking data.</div>
+    <div class="proj-note">Not updated: data up to August 2022.</div>
     <div class="proj-tech">
       <span class="tech-pill">Leaflet</span>
       <span class="tech-pill">D3.js</span>
       <span class="tech-pill">Turf.js</span>
       <span class="tech-pill">JavaScript</span>
     </div>
-    <a class="proj-btn" href="/Lupi" target="_self">Apri →</a>
+    <a class="proj-btn" href="/Lupi" target="_self">Open →</a>
   </div>
 
   <div class="proj-card" style="--card-color:#e0552d">
     <div class="proj-num">03</div>
     <div class="proj-emoji">🏔️</div>
     <div class="proj-title">Sorte Landslide</div>
-    <div class="proj-desc">Dashboard geospaziale sulla frana di Sorte (Mesolcina, GR) del 21 giugno 2024.
-    Change detection Sentinel-2, morfologia del versante ed esposizione degli elementi a rischio.</div>
+    <div class="proj-desc">Geospatial dashboard on the Sorte landslide (Mesolcina, GR) of 21 June 2024.
+    Sentinel-2 change detection, slope morphology and exposure of elements at risk.</div>
     <div class="proj-tech">
       <span class="tech-pill">Streamlit</span>
       <span class="tech-pill">GeoPandas</span>
       <span class="tech-pill">Rasterio</span>
       <span class="tech-pill">Folium</span>
     </div>
-    <a class="proj-btn" href="/Sorte" target="_self">Apri →</a>
+    <a class="proj-btn" href="/Sorte" target="_self">Open →</a>
   </div>
 
 </div>

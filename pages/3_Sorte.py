@@ -416,7 +416,18 @@ st.markdown("""<style>
 .event-src { font-family:'IBM Plex Mono',monospace; font-size:0.58rem; color:var(--text-faint); margin-top:0.7rem; line-height:1.5; }
 .note { font-size:0.74rem; color:var(--text-dim); line-height:1.55; margin:0.35rem 0 0.2rem 0; }
 .note b { color:var(--text); }
+
+/* ── Home button (top-left page link) ───────────────────────── */
+[data-testid="stPageLink-NavLink"] {
+    display:inline-flex; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; padding:0.3rem 0.85rem; transition:all 0.15s ease; }
+[data-testid="stPageLink-NavLink"]:hover { border-color:var(--accent); background:var(--surface-2); }
+[data-testid="stPageLink-NavLink"] p, [data-testid="stPageLink-NavLink"] span {
+    color:var(--text-dim) !important; font-size:0.78rem !important; font-weight:500 !important; margin:0 !important; }
+[data-testid="stPageLink-NavLink"]:hover p, [data-testid="stPageLink-NavLink"]:hover span { color:var(--accent) !important; }
 </style>""", unsafe_allow_html=True)
+
+st.page_link("app.py", label="Home", icon="🏠")
 
 # ════════════════════════════════════════════════════════════════════
 #  WELCOME SCREEN

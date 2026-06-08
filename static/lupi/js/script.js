@@ -102,10 +102,11 @@ map.addLayer(markers);
 //3. Données et variables
 
 // Variables 
-let pathsByWolf = {}; // Chemin loups 
-let data = []; // Données observation
-let filteredData = []; // Données filtré
-let animatedLayer = null; // Animation chemins
+let pathsByWolf = {}; // Wolf paths
+let data = []; // Observation data
+let filteredData = []; // Filtered data
+let animatedLayer = null; // Path animation
+let scatterData = []; // Scatter-plot (time travel) data
 
 // Graphiques de defaut
 fetch(geojsonPath)
@@ -131,17 +132,17 @@ fetch(geojsonPath)
         // Afficher les marqueurs par defaut
         addAllMarkers(data);
         
-        // Données pour scatterplot
-        const scatterPlotData = geojsonData.features.map(feature => ({
-            id: feature.properties.joint_wolf_id, 
-            longitude: feature.geometry.coordinates[0], 
-            latitude: feature.geometry.coordinates[1], 
+        // Scatter-plot data
+        scatterData = geojsonData.features.map(feature => ({
+            id: feature.properties.joint_wolf_id,
+            longitude: feature.geometry.coordinates[0],
+            latitude: feature.geometry.coordinates[1],
             year: new Date(feature.properties.joint_date).getFullYear(),
-            gender: feature.properties.joint_sexe 
+            gender: feature.properties.joint_sexe
         }));
 
-        // Création scatterplot
-        createTimeTravelScatterPlot(scatterPlotData);
+        // Build scatter-plot
+        createTimeTravelScatterPlot(scatterData);
     })
 
 
@@ -149,7 +150,7 @@ fetch(geojsonPath)
 fetch(cheminsPath)
     .then(response => response.json())
     .then(cheminsData => {
-        console.log("Données des déplacements chargées :", cheminsData);
+        console.log("Movement data loaded:", cheminsData);
 
         // Liaison avec ID
         cheminsData.features.forEach(feature => {
@@ -173,7 +174,7 @@ function showWolfPaths(wolfID) {
     const paths = pathsByWolf[wolfID];
 
     if (!paths || paths.length === 0) {
-        console.warn(`Nessun percorso trovato per ${wolfID}`);
+        console.warn(`No path found for ${wolfID}`);
         pathsLayer.clearLayers();
         return;
     }
@@ -196,7 +197,7 @@ function showWolfPaths(wolfID) {
         const coords = path.geometry.coordinates;
 
         if (!coords || coords.length === 0) {
-            console.warn("Segmento senza coordinate, saltato.");
+            console.warn("Segment without coordinates, skipped.");
             return;
         }
 
@@ -212,7 +213,7 @@ function showWolfPaths(wolfID) {
                 fillColor: 'white', 
                 fillOpacity: 0.7 
             })
-            .bindPopup(`Osservazione: ${JSON.stringify(path.properties)}`) 
+            .bindPopup(`Observation: ${JSON.stringify(path.properties)}`)
             .addTo(pathsLayer); 
         });
     });
@@ -301,7 +302,7 @@ function showWolfPaths(wolfID) {
             index++;
             marker.setLatLng(coordinates[index]); 
         } else {
-            index = 0; // Riparte dall'inizio
+            index = 0; // Restart from the beginning
             marker.setLatLng(coordinates[index]); 
         }
     }
@@ -317,7 +318,7 @@ function showWolfPaths(wolfID) {
 fetch(geojsonPath)
     .then(response => response.json())
     .then(geojsonData => {
-        console.log("Dati GeoJSON caricati:", geojsonData);
+        console.log("GeoJSON data loaded:", geojsonData);
 
         // Conversion GeoJSON
         data = geojsonData.features.map(feature => ({
@@ -331,12 +332,12 @@ fetch(geojsonPath)
             date: feature.properties.joint_date
         }));
 
-        console.log("Dati trasformati per i marker:", data);
+        console.log("Data transformed for markers:", data);
 
-        // Montrer tous les marquers par défaut
+        // Show all markers by default
         addAllMarkers(data);
     })
-    .catch(error => console.error("Errore nel caricamento dei marker:", error));
+    .catch(error => console.error("Error loading markers:", error));
 
 // Icone SVG (loup gris)
 const wolfIconHtml = `
@@ -406,11 +407,11 @@ function addAllMarkers(markerData) {
         const marker = L.marker([item.lat, item.lon], {
             icon: createWolfIcon() 
         }).bindPopup(`
-            <b>Commune:</b> ${item.commune}<br>
-            <b>Idéntifiant:</b> ${item.wolfID}<br>
+            <b>Municipality:</b> ${item.commune}<br>
+            <b>Wolf ID:</b> ${item.wolfID}<br>
             <b>Date:</b> ${item.date}<br>
-            <b>Distance parcourue à vol d'oiseau:</b> ${totalDistance} km<br>
-            <b>Nb. de municipalités avec observations:</b> ${uniqueCommunes.size}
+            <b>Straight-line distance travelled:</b> ${totalDistance} km<br>
+            <b>Municipalities with observations:</b> ${uniqueCommunes.size}
         `);
         markers.addLayer(marker);
     });
@@ -435,9 +436,9 @@ function calculateTotalDistance(wolfData) {
 function updateWolfAnalysisPanel(wolfID, totalDistance, uniqueCommunes) {
     const panel = document.getElementById("wolf-analysis-panel");
     panel.innerHTML = `
-        <h3>Analisi del Lupo: ${wolfID}</h3>
-        <p><b>Distanza totale percorsa:</b> ${totalDistance} km</p>
-        <p><b>Numero di comuni visitati:</b> ${uniqueCommunes}</p>
+        <h3>Wolf analysis: ${wolfID}</h3>
+        <p><b>Total distance travelled:</b> ${totalDistance} km</p>
+        <p><b>Number of municipalities visited:</b> ${uniqueCommunes}</p>
     `;
 }
 
@@ -510,15 +511,15 @@ function resetFilters() {
 }
 
 
-// 4.5 Graphiques #####################################################################################################################################
+// 4.5 Charts #########################################################################################################################################
 function updateCharts(filteredData) {
-    // Mise à jour des graphiques
+    // Refresh the charts
     createYearChart(filteredData);
     createCantonChartStatic(filteredData);
-    createTimeTravelScatterPlot(originalData);
+    createTimeTravelScatterPlot(scatterData);
 }
 
-// 4.5.a Observation par année
+// 4.5.a Observations per year
 function createYearChart(data) {
     const container = document.getElementById("year-chart");
 
@@ -548,17 +549,17 @@ function createYearChart(data) {
         .domain([0, d3.max(groupedData, d => d[1])])
         .range([height, 0]);
 
-    // Axe X
+    // X axis
     svg.append("g")
         .attr("transform", `translate(0, ${height})`)
         .call(d3.axisBottom(x).ticks(Math.floor(width / 50)))
         .selectAll("text")
-        .style("font-family", "Trebuchet MS")
+        .style("font-family", "DM Mono, monospace")
         .style("font-size", `${Math.max(width / 50, 8)}px`)
         .attr("transform", "rotate(-45)")
         .style("text-anchor", "end");
 
-    // Barres
+    // Bars
     svg.selectAll(".bar")
         .data(groupedData)
         .enter().append("rect")
@@ -567,7 +568,8 @@ function createYearChart(data) {
         .attr("y", d => y(d[1]))
         .attr("width", x.bandwidth())
         .attr("height", d => height - y(d[1]))
-        .attr("fill", "#D9D9D9");
+        .attr("rx", 2)
+        .attr("fill", "#81c784");
     svg.selectAll(".bar-label")
         .data(groupedData)
         .enter().append("text")
@@ -575,20 +577,21 @@ function createYearChart(data) {
         .attr("x", d => x(d[0]) + x.bandwidth() / 2)
         .attr("y", d => y(d[1]) - 5)
         .attr("text-anchor", "middle")
-        .style("font-family", "Trebuchet MS")
+        .style("font-family", "DM Mono, monospace")
         .style("font-size", `${Math.max(width / 50, 8)}px`)
         .style("font-weight", "bold")
         .text(d => d[1]);
 
-    // Titre
+    // Title
     svg.append("text")
+        .attr("class", "chart-title")
         .attr("x", width / 2)
         .attr("y", -margin.top / 2)
         .attr("text-anchor", "middle")
-        .style("font-family", "Trebuchet MS")
-        .style("font-size", `${Math.max(width / 25, 14)}px`)
-        .style("font-weight", "bold")
-        .text("Répartition des observations par année");
+        .style("font-family", "Syne, sans-serif")
+        .style("font-size", `${Math.max(width / 25, 13)}px`)
+        .style("font-weight", "700")
+        .text("Observations per year");
 }
 
 // Mise à jour avec redimensionnement 
@@ -597,7 +600,7 @@ window.addEventListener("resize", () => {
     createCantonChartStatic(data); 
 });
 
-// 4.5.b Observation par canton
+// 4.5.b Observations per canton
 function createCantonChartStatic(data) {
     const container = document.getElementById("canton-chart");
 
@@ -626,17 +629,17 @@ function createCantonChartStatic(data) {
         .domain([0, d3.max(cantonCounts, d => d[1])])
         .range([height, 0]);
 
-    // Axe X
+    // X axis
     svg.append("g")
         .attr("transform", `translate(0, ${height})`)
         .call(d3.axisBottom(x).ticks(Math.floor(width / 50)))
         .selectAll("text")
-        .style("font-family", "Trebuchet MS")
+        .style("font-family", "DM Mono, monospace")
         .style("font-size", `${Math.max(width / 50, 8)}px`)
         .attr("transform", "rotate(-45)")
         .style("text-anchor", "end");
 
-    // Barres
+    // Bars
     svg.selectAll(".bar")
         .data(cantonCounts)
         .enter().append("rect")
@@ -645,7 +648,8 @@ function createCantonChartStatic(data) {
         .attr("y", d => y(d[1]))
         .attr("width", x.bandwidth())
         .attr("height", d => height - y(d[1]))
-        .attr("fill", "#D9D9D9");
+        .attr("rx", 2)
+        .attr("fill", "#81c784");
     svg.selectAll(".bar-label")
         .data(cantonCounts)
         .enter().append("text")
@@ -653,27 +657,28 @@ function createCantonChartStatic(data) {
         .attr("x", d => x(d[0]) + x.bandwidth() / 2)
         .attr("y", d => y(d[1]) - 5)
         .attr("text-anchor", "middle")
-        .style("font-family", "Trebuchet MS")
+        .style("font-family", "DM Mono, monospace")
         .style("font-size", `${Math.max(width / 50, 8)}px`)
         .style("font-weight", "bold")
         .text(d => d[1]);
 
-    // Titre
+    // Title
     svg.append("text")
+        .attr("class", "chart-title")
         .attr("x", width / 2)
         .attr("y", -margin.top / 2)
         .attr("text-anchor", "middle")
-        .style("font-family", "Trebuchet MS")
-        .style("font-size", `${Math.max(width / 25, 14)}px`)
-        .style("font-weight", "bold")
-        .text("Répartition des observations par Canton");
+        .style("font-family", "Syne, sans-serif")
+        .style("font-size", `${Math.max(width / 25, 13)}px`)
+        .style("font-weight", "700")
+        .text("Observations per canton");
 }
 
     // Redimensionnement
     window.addEventListener("resize", () => createCantonChartStatic(data));
 
 
-// 4.5.c Graphique lat-long voyage dans le temps
+// 4.5.c Lat-long time-travel chart
 function createTimeTravelScatterPlot(originalData) {
     const container = document.getElementById("scatter-plot");
 
@@ -701,24 +706,22 @@ function createTimeTravelScatterPlot(originalData) {
         .nice()
         .range([height, 0]);
 
-    // Asse X
+    // X axis
     svg.append("g")
         .attr("transform", `translate(0, ${height})`)
         .call(d3.axisBottom(xScale).ticks(Math.floor(width / 50)))
         .selectAll("text")
-        .style("font-family", "Trebuchet MS")
-        .style("font-size", `${Math.max(width / 50, 8)}px`)
-        .style("font-weight", "bold");
+        .style("font-family", "DM Mono, monospace")
+        .style("font-size", `${Math.max(width / 50, 8)}px`);
 
-    // Asse Y
+    // Y axis
     svg.append("g")
         .call(d3.axisLeft(yScale).ticks(Math.floor(height / 50)))
         .selectAll("text")
-        .style("font-family", "Trebuchet MS")
-        .style("font-size", `${Math.max(height / 50, 8)}px`)
-        .style("font-weight", "bold");
+        .style("font-family", "DM Mono, monospace")
+        .style("font-size", `${Math.max(height / 50, 8)}px`);
 
-    // Selection selon année
+    // Select points for the chosen year
     function update(year) {
         const filteredData = originalData.filter(d => d.year === year);
         const points = svg.selectAll("circle")
@@ -729,7 +732,8 @@ function createTimeTravelScatterPlot(originalData) {
             .attr("cx", d => xScale(d.longitude))
             .attr("cy", d => yScale(d.latitude))
             .attr("r", Math.max(width / 100, 3))
-            .attr("fill", d => d.gender === "M" ? "blue" : "pink")
+            .attr("fill", d => d.gender === "M" ? "#4fc3f7" : "#f48fb1")
+            .attr("fill-opacity", 0.85)
             .merge(points)
             .transition()
             .duration(500)
@@ -739,36 +743,37 @@ function createTimeTravelScatterPlot(originalData) {
         points.exit().remove();
     }
 
-    // Titre
+    // Title
     svg.append("text")
+        .attr("class", "chart-title")
         .attr("x", width / 2)
         .attr("y", -margin.top / 2)
         .attr("text-anchor", "middle")
-        .style("font-family", "Trebuchet MS")
-        .style("font-size", `${Math.max(width / 25, 14)}px`)
-        .style("font-weight", "bold")
-        .text("Voyage dans le temps");
+        .style("font-family", "Syne, sans-serif")
+        .style("font-size", `${Math.max(width / 25, 13)}px`)
+        .style("font-weight", "700")
+        .text("Time travel");
 
-    // Etiquette X
+    // X label
     svg.append("text")
+        .attr("class", "axis-label")
         .attr("x", width / 2)
         .attr("y", height + margin.bottom - 9)
         .attr("text-anchor", "middle")
         .text("Longitude")
         .style("font-size", `${Math.max(width / 50, 9)}px`)
-        .style("font-family", "Trebuchet MS")
-        .style("font-weight", "bold");
+        .style("font-family", "DM Mono, monospace");
 
-    // Etiequette Y
+    // Y label
     svg.append("text")
+        .attr("class", "axis-label")
         .attr("x", -height / 2)
         .attr("y", -margin.left + 16)
         .attr("text-anchor", "middle")
         .attr("transform", "rotate(-90)")
         .text("Latitude")
         .style("font-size", `${Math.max(height / 50, 9)}px`)
-        .style("font-family", "Trebuchet MS")
-        .style("font-weight", "bold");
+        .style("font-family", "DM Mono, monospace");
 
     // Time-slider
     d3.select("#time-slider")
