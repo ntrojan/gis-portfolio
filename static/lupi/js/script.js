@@ -32,6 +32,31 @@ function frameSwitzerland() {
 frameSwitzerland();
 
 //##########################################################################################################################################################
+//1b. Filter checkboxes (Year / Canton / Wolf ID)
+
+const YEARS = Array.from({ length: 2022 - 1999 + 1 }, (_, i) => String(1999 + i));
+const CANTONS = ["Aargau", "Appenzell Ausserrhoden", "Bern", "Fribourg", "Glarus", "Graubünden",
+    "Luzern", "Nidwalden", "Obwalden", "Schwyz", "St- Gallen", "Thurgau", "Ticino", "Uri",
+    "Vaud", "Valais", "Zürich"];
+const WOLF_IDS = ["F01", "F05", "F07", "F11", "F14", "F16", "F18", "F19", "F24", "F28", "F31", "F32",
+    "F33", "F35", "F37", "F38", "F43", "F45", "F49", "F57", "F59", "F60", "F64", "F75", "F78", "F94",
+    "M03", "M09", "M103", "M107", "M108", "M109", "M11", "M131", "M133", "M135", "M153", "M157",
+    "M159", "M16", "M162", "M169", "M172", "M182", "M186", "M187", "M189", "M190", "M20", "M243",
+    "M28", "M30", "M32", "M34", "M35", "M36", "M38", "M43", "M45", "M46", "M47", "M51", "M52", "M56",
+    "M59", "M64", "M68", "M71", "M73", "M74", "M75", "M76", "M82", "M92", "M95", "M97"];
+
+// Populate a checkbox group; each box re-applies the filters on change
+function buildCheckboxes(containerId, values) {
+    const c = document.getElementById(containerId);
+    c.innerHTML = values.map(v =>
+        `<label><input type="checkbox" value="${v}" onchange="applyFilters()"><span>${v}</span></label>`
+    ).join("");
+}
+buildCheckboxes("filter-year", YEARS);
+buildCheckboxes("filter-canton", CANTONS);
+buildCheckboxes("filter-wolf-id", WOLF_IDS);
+
+//##########################################################################################################################################################
 //2. Clusters
 
 // Icone SVG (Loup gris)
@@ -466,11 +491,9 @@ function updateWolfAnalysisPanel(wolfID, totalDistance, uniqueCommunes) {
 
 //4.4 Filters #####################################################################################################################################
 
-// Read all selected values of a (multi-)select as an array, ignoring the empty option
+// Read all ticked checkboxes of a filter group as an array of values
 function getSelectedValues(id) {
-    return Array.from(document.getElementById(id).selectedOptions)
-        .map(o => o.value)
-        .filter(v => v !== "");
+    return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i => i.value);
 }
 
 // Apply the filters
@@ -509,10 +532,10 @@ function applyFilters() {
 }
 
 function resetFilters() {
-    // Clear filter values (single + multi-select)
+    // Clear filter values (single select + checkbox groups)
     document.getElementById("filter-gender").value = "";
     ["filter-year", "filter-canton", "filter-wolf-id"].forEach(id => {
-        Array.from(document.getElementById(id).options).forEach(o => o.selected = false);
+        document.querySelectorAll(`#${id} input`).forEach(i => i.checked = false);
     });
 
     // Restore the original data

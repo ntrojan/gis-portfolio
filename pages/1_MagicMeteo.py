@@ -10,7 +10,10 @@ st.markdown("""
 <style>
   header[data-testid="stHeader"], [data-testid="collapsedControl"],
   section[data-testid="stSidebar"] { display: none !important; }
-  .block-container { padding: 0.6rem 1rem 0 1rem !important; max-width: 100% !important; }
+  .block-container { padding: 0.15rem 1rem 0 1rem !important; max-width: 100% !important; }
+  [data-testid="stMainBlockContainer"] { padding-top: 0.15rem !important; }
+  [data-testid="stVerticalBlock"] { gap: 0.4rem !important; }
+  [data-testid="stPageLink"] { margin: 0 !important; }
   [data-testid="stPageLink-NavLink"] {
       display: inline-flex; background: #111827; border: 1px solid rgba(255,255,255,0.12);
       border-radius: 10px; padding: 0.35rem 0.9rem; transition: background 0.2s; }

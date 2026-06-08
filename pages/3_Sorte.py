@@ -87,10 +87,14 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: var(--text
 [data-testid="stMain"], [data-testid="stMainBlockContainer"], .main, body {
     background-color: var(--bg) !important;
 }
-.block-container { padding: 0.8rem 1.6rem 1rem 1.6rem !important; max-width: 1560px !important; }
+.block-container { padding: 0.15rem 1.6rem 0.6rem 1.6rem !important; max-width: 1560px !important; }
+[data-testid="stMainBlockContainer"] { padding-top: 0.15rem !important; }
+[data-testid="stVerticalBlock"] { gap: 0.55rem !important; }
 header[data-testid="stHeader"], [data-testid="collapsedControl"],
 section[data-testid="stSidebar"] { display: none !important; }
 #MainMenu, footer { visibility: hidden; }
+/* pull the Home link tight to the top */
+[data-testid="stPageLink"] { margin-top: 0 !important; margin-bottom: 0 !important; }
 
 /* ── Typography ─────────────────────────────────────────────── */
 .eyebrow { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; letter-spacing:0.16em;
@@ -567,7 +571,7 @@ elif view == "Map":
     with mh_l:
         st.markdown('<div class="viewbar-eye">02 · TERRITORIAL VIEW</div>'
             '<div class="viewbar-title" style="margin:0.1rem 0 0.15rem 0">Failure location, terrain & exposure</div>'
-            '<div class="sec-lead" style="max-width:780px">The <b style="color:#e0552d">orange polygon</b> is the '
+            '<div class="viewbar-lead" style="max-width:780px">The <b style="color:#e0552d">orange polygon</b> is the '
             'mapped failure body. Pick an analysis layer to reveal the terrain predisposition behind it and the '
             'exposed buildings around it. Click a building for its attributes. Controls are in the menu on the right.</div>',
             unsafe_allow_html=True)
