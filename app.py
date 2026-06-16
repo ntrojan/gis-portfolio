@@ -127,7 +127,7 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
     </div>
     <div class="proj-title">SwissMorph</div>
     <div class="proj-desc">QGIS plugin that downloads swissALTI3D tiles from the swisstopo STAC API
-    and derives seven morphometric layers — slope, curvature, TPI, SPI and more.</div>
+    and derives seven morphometric layers: slope, curvature, TPI, SPI and more.</div>
     <div class="proj-tech">
       <span class="tech-pill">Python</span>
       <span class="tech-pill">QGIS</span>
