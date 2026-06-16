@@ -46,7 +46,7 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em;
                  text-transform: uppercase; color: var(--text-faint); margin-bottom: 1rem; margin-top: 2.5rem; }
 
-.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
 .proj-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
              padding: 1.2rem 1.3rem; position: relative; overflow: hidden;
              transition: box-shadow 0.2s; cursor: default; }
@@ -153,6 +153,23 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
       <span class="tech-pill">Folium</span>
     </div>
     <a class="proj-btn" href="/Sorte" target="_self">Open →</a>
+  </div>
+
+  <div class="proj-card" style="--card-color:#ba68c8">
+    <div class="proj-top">
+      <span class="proj-num">04</span>
+      <span class="proj-kind">QGIS Plugin</span>
+    </div>
+    <div class="proj-title">SwissMorph</div>
+    <div class="proj-desc">QGIS plugin that downloads swissALTI3D tiles from the swisstopo STAC API
+    and derives seven morphometric layers — slope, curvature, TPI, SPI and more.</div>
+    <div class="proj-tech">
+      <span class="tech-pill">Python</span>
+      <span class="tech-pill">QGIS</span>
+      <span class="tech-pill">swisstopo API</span>
+      <span class="tech-pill">WhiteboxTools</span>
+    </div>
+    <a class="proj-btn" href="https://github.com/ntrojan/swissmorph" target="_blank">GitHub →</a>
   </div>
 
 </div>
