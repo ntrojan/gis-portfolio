@@ -120,9 +120,26 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
     <a class="proj-btn" href="/MagicMeteo" target="_self">Open →</a>
   </div>
 
-  <div class="proj-card" style="--card-color:#81c784">
+  <div class="proj-card" style="--card-color:#ba68c8">
     <div class="proj-top">
       <span class="proj-num">02</span>
+      <span class="proj-kind">QGIS Plugin</span>
+    </div>
+    <div class="proj-title">SwissMorph</div>
+    <div class="proj-desc">QGIS plugin that downloads swissALTI3D tiles from the swisstopo STAC API
+    and derives seven morphometric layers — slope, curvature, TPI, SPI and more.</div>
+    <div class="proj-tech">
+      <span class="tech-pill">Python</span>
+      <span class="tech-pill">QGIS</span>
+      <span class="tech-pill">swisstopo API</span>
+      <span class="tech-pill">WhiteboxTools</span>
+    </div>
+    <a class="proj-btn" href="https://github.com/ntrojan/swissmorph" target="_blank">GitHub →</a>
+  </div>
+
+  <div class="proj-card" style="--card-color:#81c784">
+    <div class="proj-top">
+      <span class="proj-num">03</span>
       <span class="proj-kind">Dashboard</span>
     </div>
     <div class="proj-title">Wolves in Switzerland</div>
@@ -140,7 +157,7 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 
   <div class="proj-card" style="--card-color:#e0552d">
     <div class="proj-top">
-      <span class="proj-num">03</span>
+      <span class="proj-num">04</span>
       <span class="proj-kind">Dashboard</span>
     </div>
     <div class="proj-title">Sorte Landslide</div>
@@ -153,23 +170,6 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
       <span class="tech-pill">Folium</span>
     </div>
     <a class="proj-btn" href="/Sorte" target="_self">Open →</a>
-  </div>
-
-  <div class="proj-card" style="--card-color:#ba68c8">
-    <div class="proj-top">
-      <span class="proj-num">04</span>
-      <span class="proj-kind">QGIS Plugin</span>
-    </div>
-    <div class="proj-title">SwissMorph</div>
-    <div class="proj-desc">QGIS plugin that downloads swissALTI3D tiles from the swisstopo STAC API
-    and derives seven morphometric layers — slope, curvature, TPI, SPI and more.</div>
-    <div class="proj-tech">
-      <span class="tech-pill">Python</span>
-      <span class="tech-pill">QGIS</span>
-      <span class="tech-pill">swisstopo API</span>
-      <span class="tech-pill">WhiteboxTools</span>
-    </div>
-    <a class="proj-btn" href="https://github.com/ntrojan/swissmorph" target="_blank">GitHub →</a>
   </div>
 
 </div>
