@@ -174,7 +174,7 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 
   <div class="proj-card" style="--card-color:#7c9cc4">
     <div class="proj-top">
-      <span class="proj-num">04</span>
+      <span class="proj-num">05</span>
       <span class="proj-kind">QGIS plugin</span>
     </div>
     <div class="proj-title">SWISSavalanche</div>
