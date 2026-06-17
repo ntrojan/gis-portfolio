@@ -46,7 +46,7 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em;
                  text-transform: uppercase; color: var(--text-faint); margin-bottom: 1rem; margin-top: 2.5rem; }
 
-.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 .proj-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
              padding: 1.2rem 1.3rem; position: relative; overflow: hidden;
              transition: box-shadow 0.2s; cursor: default; }
@@ -125,7 +125,7 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
       <span class="proj-num">02</span>
       <span class="proj-kind">QGIS Plugin</span>
     </div>
-    <div class="proj-title">SwissMorph</div>
+    <div class="proj-title">SWISSmorph</div>
     <div class="proj-desc">QGIS plugin that downloads swissALTI3D tiles from the swisstopo STAC API
     and derives seven morphometric layers: slope, curvature, TPI, SPI and more.</div>
     <div class="proj-tech">
@@ -137,9 +137,26 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
     <a class="proj-btn" href="https://github.com/ntrojan/swissmorph" target="_blank">GitHub →</a>
   </div>
 
-  <div class="proj-card" style="--card-color:#81c784">
+  <div class="proj-card" style="--card-color:#7c9cc4">
     <div class="proj-top">
       <span class="proj-num">03</span>
+      <span class="proj-kind">QGIS plugin</span>
+    </div>
+    <div class="proj-title">SWISSavalanche</div>
+    <div class="proj-desc">QGIS Processing plugin mapping seasonal avalanche susceptibility in the Swiss Alps,
+    combining swissALTI3D terrain morphology with Open-Meteo snow-load data and SLF incident validation.</div>
+    <div class="proj-tech">
+      <span class="tech-pill">QGIS Processing</span>
+      <span class="tech-pill">Rasterio</span>
+      <span class="tech-pill">GeoPandas</span>
+      <span class="tech-pill">Python</span>
+    </div>
+    <a class="proj-btn" href="/SWISSavalanche" target="_self">Open →</a>
+  </div>
+
+  <div class="proj-card" style="--card-color:#81c784">
+    <div class="proj-top">
+      <span class="proj-num">04</span>
       <span class="proj-kind">Dashboard</span>
     </div>
     <div class="proj-title">Wolves in Switzerland</div>
@@ -157,7 +174,7 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 
   <div class="proj-card" style="--card-color:#e0552d">
     <div class="proj-top">
-      <span class="proj-num">04</span>
+      <span class="proj-num">05</span>
       <span class="proj-kind">Dashboard</span>
     </div>
     <div class="proj-title">Sorte Landslide</div>
@@ -170,23 +187,6 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
       <span class="tech-pill">Folium</span>
     </div>
     <a class="proj-btn" href="/Sorte" target="_self">Open →</a>
-  </div>
-
-  <div class="proj-card" style="--card-color:#7c9cc4">
-    <div class="proj-top">
-      <span class="proj-num">05</span>
-      <span class="proj-kind">QGIS plugin</span>
-    </div>
-    <div class="proj-title">SWISSavalanche</div>
-    <div class="proj-desc">QGIS Processing plugin mapping seasonal avalanche susceptibility in the Swiss Alps,
-    combining swissALTI3D terrain morphology with Open-Meteo snow-load data and SLF incident validation.</div>
-    <div class="proj-tech">
-      <span class="tech-pill">QGIS Processing</span>
-      <span class="tech-pill">Rasterio</span>
-      <span class="tech-pill">GeoPandas</span>
-      <span class="tech-pill">Python</span>
-    </div>
-    <a class="proj-btn" href="/SWISSavalanche" target="_self">Open →</a>
   </div>
 
 </div>
