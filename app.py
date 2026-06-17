@@ -172,6 +172,23 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
     <a class="proj-btn" href="/Sorte" target="_self">Open →</a>
   </div>
 
+  <div class="proj-card" style="--card-color:#7c9cc4">
+    <div class="proj-top">
+      <span class="proj-num">04</span>
+      <span class="proj-kind">QGIS plugin</span>
+    </div>
+    <div class="proj-title">SWISSavalanche</div>
+    <div class="proj-desc">QGIS Processing plugin mapping seasonal avalanche susceptibility in the Swiss Alps,
+    combining swissALTI3D terrain morphology with Open-Meteo snow-load data and SLF incident validation.</div>
+    <div class="proj-tech">
+      <span class="tech-pill">QGIS Processing</span>
+      <span class="tech-pill">Rasterio</span>
+      <span class="tech-pill">GeoPandas</span>
+      <span class="tech-pill">Python</span>
+    </div>
+    <a class="proj-btn" href="/SWISSavalanche" target="_self">Open →</a>
+  </div>
+
 </div>
 
 <div class="footer">Nicolò Trojan · Built with Streamlit · 2025</div>
