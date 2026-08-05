@@ -189,6 +189,23 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
     <a class="proj-btn" href="/Sorte" target="_self">Open →</a>
   </div>
 
+  <div class="proj-card" style="--card-color:#26a69a">
+    <div class="proj-top">
+      <span class="proj-num">06</span>
+      <span class="proj-kind">Web app</span>
+    </div>
+    <div class="proj-title">TicinoTour</div>
+    <div class="proj-desc">Interactive map of public-transport isochrones for every transit stop in
+    Canton Ticino, with tourist POIs. Isochrones pre-computed with OpenTripPlanner from Swiss GTFS.</div>
+    <div class="proj-tech">
+      <span class="tech-pill">MapLibre GL</span>
+      <span class="tech-pill">OpenTripPlanner</span>
+      <span class="tech-pill">GTFS</span>
+      <span class="tech-pill">React</span>
+    </div>
+    <a class="proj-btn" href="https://ntrojan.github.io/ticino-app/" target="_blank">Open →</a>
+  </div>
+
 </div>
 
 <div class="footer">Nicolò Trojan · Built with Streamlit · 2025</div>
