@@ -120,9 +120,26 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
     <a class="proj-btn" href="/MagicMeteo" target="_self">Open →</a>
   </div>
 
-  <div class="proj-card" style="--card-color:#ba68c8">
+  <div class="proj-card" style="--card-color:#26a69a">
     <div class="proj-top">
       <span class="proj-num">02</span>
+      <span class="proj-kind">Web app</span>
+    </div>
+    <div class="proj-title">TicinoTour</div>
+    <div class="proj-desc">Interactive map of public-transport isochrones for every transit stop in
+    Canton Ticino, with tourist POIs. Isochrones pre-computed with OpenTripPlanner from Swiss GTFS.</div>
+    <div class="proj-tech">
+      <span class="tech-pill">MapLibre GL</span>
+      <span class="tech-pill">OpenTripPlanner</span>
+      <span class="tech-pill">GTFS</span>
+      <span class="tech-pill">React</span>
+    </div>
+    <a class="proj-btn" href="https://ntrojan.github.io/ticino-app/" target="_blank">Open →</a>
+  </div>
+
+  <div class="proj-card" style="--card-color:#ba68c8">
+    <div class="proj-top">
+      <span class="proj-num">03</span>
       <span class="proj-kind">QGIS Plugin</span>
     </div>
     <div class="proj-title">SWISSmorph</div>
@@ -139,7 +156,7 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 
   <div class="proj-card" style="--card-color:#7c9cc4">
     <div class="proj-top">
-      <span class="proj-num">03</span>
+      <span class="proj-num">04</span>
       <span class="proj-kind">QGIS plugin</span>
     </div>
     <div class="proj-title">SWISSavalanche</div>
@@ -156,7 +173,7 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 
   <div class="proj-card" style="--card-color:#81c784">
     <div class="proj-top">
-      <span class="proj-num">04</span>
+      <span class="proj-num">05</span>
       <span class="proj-kind">Dashboard</span>
     </div>
     <div class="proj-title">Wolves in Switzerland</div>
@@ -174,7 +191,7 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 
   <div class="proj-card" style="--card-color:#e0552d">
     <div class="proj-top">
-      <span class="proj-num">05</span>
+      <span class="proj-num">06</span>
       <span class="proj-kind">Dashboard</span>
     </div>
     <div class="proj-title">Sorte Landslide</div>
@@ -187,23 +204,6 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
       <span class="tech-pill">Folium</span>
     </div>
     <a class="proj-btn" href="/Sorte" target="_self">Open →</a>
-  </div>
-
-  <div class="proj-card" style="--card-color:#26a69a">
-    <div class="proj-top">
-      <span class="proj-num">06</span>
-      <span class="proj-kind">Web app</span>
-    </div>
-    <div class="proj-title">TicinoTour</div>
-    <div class="proj-desc">Interactive map of public-transport isochrones for every transit stop in
-    Canton Ticino, with tourist POIs. Isochrones pre-computed with OpenTripPlanner from Swiss GTFS.</div>
-    <div class="proj-tech">
-      <span class="tech-pill">MapLibre GL</span>
-      <span class="tech-pill">OpenTripPlanner</span>
-      <span class="tech-pill">GTFS</span>
-      <span class="tech-pill">React</span>
-    </div>
-    <a class="proj-btn" href="https://ntrojan.github.io/ticino-app/" target="_blank">Open →</a>
   </div>
 
 </div>
