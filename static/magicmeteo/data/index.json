@@ -1,27 +1,7 @@
 {
-  "updated_utc": "2026-09-12T19:46:24.564883+00:00",
+  "updated_utc": "2026-09-13T01:44:44.235480+00:00",
   "hour_step": 6,
   "timesteps": [
-    {
-      "file": "weather_202609120000.geojson",
-      "forecast_time_iso": "2026-09-12T00:00",
-      "forecast_time_str": "202609120000"
-    },
-    {
-      "file": "weather_202609120600.geojson",
-      "forecast_time_iso": "2026-09-12T06:00",
-      "forecast_time_str": "202609120600"
-    },
-    {
-      "file": "weather_202609121200.geojson",
-      "forecast_time_iso": "2026-09-12T12:00",
-      "forecast_time_str": "202609121200"
-    },
-    {
-      "file": "weather_202609121800.geojson",
-      "forecast_time_iso": "2026-09-12T18:00",
-      "forecast_time_str": "202609121800"
-    },
     {
       "file": "weather_202609130000.geojson",
       "forecast_time_iso": "2026-09-13T00:00",
@@ -101,6 +81,26 @@
       "file": "weather_202609161800.geojson",
       "forecast_time_iso": "2026-09-16T18:00",
       "forecast_time_str": "202609161800"
+    },
+    {
+      "file": "weather_202609170000.geojson",
+      "forecast_time_iso": "2026-09-17T00:00",
+      "forecast_time_str": "202609170000"
+    },
+    {
+      "file": "weather_202609170600.geojson",
+      "forecast_time_iso": "2026-09-17T06:00",
+      "forecast_time_str": "202609170600"
+    },
+    {
+      "file": "weather_202609171200.geojson",
+      "forecast_time_iso": "2026-09-17T12:00",
+      "forecast_time_str": "202609171200"
+    },
+    {
+      "file": "weather_202609171800.geojson",
+      "forecast_time_iso": "2026-09-17T18:00",
+      "forecast_time_str": "202609171800"
     }
   ]
 }
